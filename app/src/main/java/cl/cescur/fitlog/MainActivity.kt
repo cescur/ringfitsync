@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import cl.cescur.fitlog.ui.FitLogTheme
 import cl.cescur.fitlog.ui.HistoryScreen
 import cl.cescur.fitlog.ui.HomeScreen
+import cl.cescur.fitlog.ui.PrivacyScreen
 import cl.cescur.fitlog.ui.ReviewScreen
 import cl.cescur.fitlog.ui.SettingsScreen
 
@@ -35,7 +36,10 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("history") { HistoryScreen(onBack = { nav.popBackStack() }) }
-                    composable("settings") { SettingsScreen(onBack = { nav.popBackStack() }) }
+                    composable("settings") {
+                        SettingsScreen(onBack = { nav.popBackStack() }, onPrivacy = { nav.navigate("privacy") })
+                    }
+                    composable("privacy") { PrivacyScreen(onBack = { nav.popBackStack() }) }
                 }
             }
         }

@@ -20,7 +20,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -251,10 +252,10 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
                     if (sameSaved) MutedText("Ya está guardado.")
                     other?.let { MutedText("Ya hay un registro de este día (${formatDuration(it.durationSec)}). Si lo guardas, se reemplaza.", color = Warn) }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        PickerBox("Fecha", d.date?.toString() ?: "Elegir", Modifier.weight(1f)) {
+                        PickerBox("Fecha", d.date?.toString() ?: "Elegir", Modifier.weight(1f), Icons.Outlined.Event) {
                             showDatePicker(context, d.date ?: LocalDate.now()) { v -> update(d.key) { it.copy(date = v) } }
                         }
-                        PickerBox("Hora de inicio", d.startTime.toString(), Modifier.weight(1f)) {
+                        PickerBox("Hora de inicio", d.startTime.toString(), Modifier.weight(1f), Icons.Outlined.Schedule) {
                             showTimePicker(context, d.startTime) { v -> update(d.key) { it.copy(startTime = v) } }
                         }
                     }
@@ -328,7 +329,7 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
 }
 
 @Composable
-private fun PickerBox(label: String, value: String, modifier: Modifier, onClick: () -> Unit) {
+private fun PickerBox(label: String, value: String, modifier: Modifier, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
     Column(modifier) {
         Text(label, fontSize = 12.sp, color = Muted)
         Row(
@@ -342,7 +343,7 @@ private fun PickerBox(label: String, value: String, modifier: Modifier, onClick:
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(value, fontSize = 16.sp, modifier = Modifier.weight(1f))
-            Icon(Icons.Filled.DateRange, contentDescription = null, tint = Muted)
+            Icon(icon, contentDescription = null, tint = Muted)
         }
     }
 }

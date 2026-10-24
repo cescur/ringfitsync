@@ -1,21 +1,42 @@
 package cl.cescur.fitlog.ui
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.Policy
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.SmartToy
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,15 +44,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withLink
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cl.cescur.fitlog.BuildConfigInfo
+import cl.cescur.fitlog.health.HealthConnect
 import cl.cescur.fitlog.health.HealthStatus
 import cl.cescur.fitlog.parser.DateOrder
 
@@ -43,103 +63,178 @@ const val PRIVACY_TEXT =
         "Health Connect. La app no usa internet, no tiene anuncios ni analítica, y solo comparte datos cuando tú " +
         "exportas el CSV."
 
+private val DATE_ORDER_LABELS = mapOf(DateOrder.DMY to "Día/mes (29/11)", DateOrder.MDY to "Mes/día (11/29)")
+
+private fun Context.openUrl(url: String) = startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+private fun SectionHeader(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 4.dp),
+    )
+}
+
+@Composable
+private fun SettingItem(
+    icon: ImageVector,
+    title: String,
+    supporting: String? = null,
+    iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    trailing: @Composable (() -> Unit)? = null,
+    // Último parámetro a propósito: así una lambda final es la acción al pulsar, no el contenido.
+    onClick: (() -> Unit)? = null,
+) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = supporting?.let { { Text(it) } },
+        leadingContent = { Icon(icon, contentDescription = null, tint = iconTint) },
+        trailingContent = trailing,
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+    )
+}
+
+@Composable
+fun SettingsScreen(onBack: () -> Unit, onPrivacy: () -> Unit) {
     val context = LocalContext.current
     val settings = context.app.settings
     val health = rememberHealthState()
     var dateOrder by remember { mutableStateOf(settings.dateOrder) }
     var startTime by remember { mutableStateOf(settings.defaultStartTime) }
+    var choosingDateOrder by remember { mutableStateOf(false) }
 
     Scaffold(topBar = { AppBar("Ajustes", onBack = onBack) }) { padding ->
-        Column(
-            Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            SectionCard {
-                CardTitle("Formato de fecha en el juego")
-                MutedText("Si un número es mayor que 12, el orden se deduce solo.")
-                listOf(DateOrder.DMY to "Día/mes (29/11)", DateOrder.MDY to "Mes/día (11/29)").forEach { (value, label) ->
-                    Row(
-                        Modifier.fillMaxWidth().clickable { dateOrder = value; settings.dateOrder = value },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(selected = dateOrder == value, onClick = { dateOrder = value; settings.dateOrder = value })
-                        Text(label)
+        LazyColumn(Modifier.fillMaxSize().padding(padding)) {
+            item { SectionHeader("Importación") }
+            item {
+                SettingItem(Icons.Outlined.Event, "Formato de fecha del juego", DATE_ORDER_LABELS.getValue(dateOrder)) {
+                    choosingDateOrder = true
+                }
+            }
+            item {
+                SettingItem(
+                    Icons.Outlined.Schedule,
+                    "Hora de inicio por defecto",
+                    "$startTime · el juego no guarda la hora, puedes cambiarla al revisar",
+                ) {
+                    showTimePicker(context, startTime) { startTime = it; settings.defaultStartTime = it }
+                }
+            }
+
+            item { HorizontalDivider(Modifier.padding(top = 8.dp)) }
+            item { SectionHeader("Health Connect") }
+            item {
+                val ok = health.status == HealthStatus.OK
+                SettingItem(
+                    if (ok) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    "Estado",
+                    health.status?.text ?: "Comprobando…",
+                    iconTint = when (health.status) {
+                        null -> Muted
+                        HealthStatus.OK -> Ok
+                        else -> Warn
+                    },
+                    trailing = if (health.status == HealthStatus.MISSING_PERMISSIONS) {
+                        { FilledTonalButton(onClick = health.grant) { Text("Dar permisos") } }
+                    } else {
+                        null
+                    },
+                )
+            }
+            if (health.status != null && health.status != HealthStatus.UNAVAILABLE) {
+                item {
+                    SettingItem(Icons.AutoMirrored.Outlined.OpenInNew, "Abrir Health Connect", "Permisos y datos guardados") {
+                        runCatching { context.startActivity(HealthConnect.settingsIntent()) }
                     }
                 }
             }
 
-            SectionCard {
-                CardTitle("Hora de inicio por defecto")
-                MutedText("La pantalla del juego no dice a qué hora entrenaste. Se usa esta hora y puedes cambiarla en la revisión.")
-                OutlinedButton(onClick = {
-                    showTimePicker(context, startTime) { startTime = it; settings.defaultStartTime = it }
-                }) { Text(startTime.toString()) }
-            }
+            item { HorizontalDivider(Modifier.padding(top = 8.dp)) }
+            item { SectionHeader("Privacidad") }
+            item { SettingItem(Icons.Outlined.Policy, "Política de privacidad", "Todo se queda en tu móvil", onClick = onPrivacy) }
 
-            SectionCard {
-                CardTitle("Health Connect")
-                MutedText(health.status?.text ?: "Comprobando…", color = if (health.status == HealthStatus.OK) Ok else Muted)
-                if (health.status == HealthStatus.MISSING_PERMISSIONS) {
-                    Button(onClick = health.grant, modifier = Modifier.fillMaxWidth()) { Text("Dar permisos") }
-                }
-                if (health.status != null && health.status != HealthStatus.UNAVAILABLE) {
-                    Text(
-                        "Abrir ajustes de Health Connect",
-                        color = Accent,
-                        modifier = Modifier.clickable {
-                            runCatching { context.startActivity(cl.cescur.fitlog.health.HealthConnect.settingsIntent()) }
-                        }.padding(vertical = 6.dp),
-                    )
+            item { HorizontalDivider(Modifier.padding(top = 8.dp)) }
+            item { SectionHeader("Acerca de") }
+            item { SettingItem(Icons.Outlined.Info, "Versión", BuildConfigInfo.versionName(context)) }
+            item {
+                SettingItem(Icons.Outlined.Code, "Código fuente", "github.com/cescur/ringfitsync") { context.openUrl(REPO_URL) }
+            }
+            item {
+                SettingItem(Icons.Outlined.Lightbulb, "Inspirada en RingFitConnect", "De Toshinori Watanabe, licencia MIT") {
+                    context.openUrl(INSPIRATION_URL)
                 }
             }
-
-            SectionCard {
-                CardTitle("Privacidad")
-                MutedText(PRIVACY_TEXT)
+            item { SettingItem(Icons.Outlined.Description, "Licencia", "MIT, software libre") }
+            item {
+                SettingItem(
+                    Icons.Outlined.SmartToy,
+                    "Hecha con IA",
+                    "Se programó con Claude Code, con la dirección y las pruebas de su autor.",
+                )
             }
-
-            SectionCard {
-                CardTitle("Acerca de")
-                MutedText("Versión ${BuildConfigInfo.versionName(context)}")
-                MutedText(
-                    "Esta app no está afiliada, patrocinada ni aprobada por Nintendo. Nintendo Switch y Ring Fit Adventure son " +
+            item {
+                SettingItem(
+                    Icons.Outlined.Gavel,
+                    "Aviso legal",
+                    "No está afiliada, patrocinada ni aprobada por Nintendo. Nintendo Switch y Ring Fit Adventure son " +
                         "marcas registradas de Nintendo. Health Connect es una marca de Google LLC.",
-                )
-                val linkStyle = TextLinkStyles(SpanStyle(color = Accent, textDecoration = TextDecoration.Underline))
-                Text(
-                    buildAnnotatedString {
-                        append("Software libre con licencia MIT. La lógica de lectura se inspira en ")
-                        withLink(LinkAnnotation.Url(INSPIRATION_URL, linkStyle)) { append("RingFitConnect") }
-                        append(" de Toshinori Watanabe (MIT).")
-                    },
-                    color = Muted,
-                )
-                MutedText("Esta app se hizo con ayuda de inteligencia artificial (Claude Code), con la dirección y las pruebas de su autor.")
-                Text(
-                    "Código fuente en GitHub",
-                    color = Accent,
-                    modifier = Modifier.clickable { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(REPO_URL))) }
-                        .padding(vertical = 6.dp),
                 )
             }
         }
+    }
+
+    if (choosingDateOrder) {
+        AlertDialog(
+            onDismissRequest = { choosingDateOrder = false },
+            icon = { Icon(Icons.Outlined.Event, contentDescription = null) },
+            title = { Text("Formato de fecha del juego") },
+            text = {
+                Column {
+                    Text(
+                        "Si un número es mayor que 12, el orden se deduce solo.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    DATE_ORDER_LABELS.forEach { (value, label) ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .selectable(selected = dateOrder == value, role = Role.RadioButton) {
+                                    dateOrder = value
+                                    settings.dateOrder = value
+                                    choosingDateOrder = false
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = dateOrder == value, onClick = null)
+                            Text(label, modifier = Modifier.padding(start = 12.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { choosingDateOrder = false }) { Text("Cerrar") } },
+        )
     }
 }
 
 @Composable
 fun PrivacyScreen(onBack: () -> Unit) {
     Scaffold(topBar = { AppBar("Privacidad", onBack = onBack) }) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
-            SectionCard {
-                CardTitle("Cómo usa FitLog tus datos")
-                MutedText(PRIVACY_TEXT)
-                MutedText(
-                    "FitLog solo escribe en Health Connect sesiones de ejercicio, calorías activas y distancia de los días " +
-                        "que confirmas, y lee esos mismos tipos para poder reemplazar o borrar lo que guardó.",
-                )
-            }
+        Column(
+            Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
+        ) {
+            Text("Cómo usa FitLog tus datos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            Text(PRIVACY_TEXT, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 12.dp))
+            Text(
+                "FitLog solo escribe en Health Connect sesiones de ejercicio, calorías activas y distancia de los días " +
+                    "que confirmas, y lee esos mismos tipos para poder reemplazar o borrar lo que guardó.",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(top = 12.dp),
+            )
         }
     }
 }

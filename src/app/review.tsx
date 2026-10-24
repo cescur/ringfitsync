@@ -31,7 +31,8 @@ interface Draft {
 function toDraft(w: ParsedWorkout, startTime: string, i: number): Draft {
   return {
     key: `${i}-${w.date}`,
-    checked: hasValues(w),
+    // Un día con 0:00:00 (sin actividad) no se marca.
+    checked: hasValues(w) && w.durationSec !== 0,
     date: w.date,
     startTime,
     duration: w.durationSec === undefined ? '' : formatDuration(w.durationSec),
@@ -200,6 +201,7 @@ export default function Review() {
                 trackColor={{ true: colors.accent }}
               />
             </View>
+            {parseDurationInput(d.duration) === 0 && <Text style={styles.note}>Sin actividad este día.</Text>}
             {d.dateIsToday && <Text style={styles.note}>La imagen no tenía fecha: se usa la de hoy.</Text>}
             {sameSaved && <Text style={styles.note}>Ya está guardado.</Text>}
             {other && (

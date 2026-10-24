@@ -6,7 +6,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "android": {
       "package": "com.solof.ringfitlog",
       "adaptiveIcon": {
@@ -53,6 +55,17 @@
           }
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "b169d99b-1924-4b77-a1a5-f08f8a9717d3"
+      }
+    },
+    "owner": "cescur"
   }
 }

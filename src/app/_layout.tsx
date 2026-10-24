@@ -14,7 +14,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.bg },
         }}
       >
-        <Stack.Screen name="index" options={{ title: 'Ring Fit Log' }} />
+        <Stack.Screen name="index" options={{ title: 'FitLog' }} />
         <Stack.Screen name="review" options={{ title: 'Revisar entrenamientos' }} />
         <Stack.Screen name="history" options={{ title: 'Historial' }} />
         <Stack.Screen name="settings" options={{ title: 'Ajustes' }} />

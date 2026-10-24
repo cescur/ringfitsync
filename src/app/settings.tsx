@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -99,6 +100,19 @@ export default function SettingsScreen() {
           El texto de las fotos se reconoce en el propio móvil y los entrenamientos solo se guardan en esta app y en
           Health Connect. La app no usa internet, no tiene anuncios ni analítica, y solo comparte datos cuando tú
           exportas el CSV.
+        </Text>
+      </Card>
+
+      <Card>
+        <Text style={styles.title}>Acerca de</Text>
+        <Text style={styles.muted}>Versión {Constants.expoConfig?.version ?? '–'}</Text>
+        <Text style={[styles.muted, { marginTop: 8 }]}>
+          Esta app no está afiliada, patrocinada ni aprobada por Nintendo. Nintendo Switch y Ring Fit Adventure son
+          marcas registradas de Nintendo. Health Connect es una marca de Google LLC.
+        </Text>
+        <Text style={[styles.muted, { marginTop: 8 }]}>
+          Software libre con licencia MIT. La lógica de lectura se inspira en RingFitConnect de Toshinori Watanabe
+          (MIT).
         </Text>
       </Card>
     </ScrollView>

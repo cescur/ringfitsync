@@ -62,3 +62,15 @@ la revisión avisa y reemplaza el registro anterior.
 
 En la revisión, «Ver el texto reconocido → Compartir texto» sirve para mandar el texto del OCR
 y añadirlo como caso de prueba.
+
+## Aviso legal
+
+Proyecto personal sin ánimo de lucro. No está afiliado, patrocinado ni aprobado por Nintendo.
+Nintendo Switch y Ring Fit Adventure son marcas registradas de Nintendo. Health Connect es una
+marca de Google LLC. La captura en `src/lib/__tests__/fixtures` se usa solo como caso de prueba.
+
+## Créditos y licencia
+
+- La lógica de lectura se inspira en [RingFitConnect](https://github.com/watanabetoshinori/RingFitConnect)
+  de Toshinori Watanabe (MIT), la versión equivalente para iOS y HealthKit.
+- Código bajo licencia [MIT](LICENSE).

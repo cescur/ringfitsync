@@ -20,6 +20,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
+        // Solo procesadores ARM (los móviles reales): el OCR de ML Kit pesa ~11 MB por arquitectura.
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
 
     signingConfigs {

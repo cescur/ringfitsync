@@ -1,8 +1,1 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024'><g>
-  <circle cx="512" cy="512" r="225" fill="none" stroke="#FFFFFF" stroke-width="72"/>
-  <rect x="196" y="432" width="76" height="160" rx="30" fill="#FFFFFF"/>
-  <rect x="752" y="432" width="76" height="160" rx="30" fill="#FFFFFF"/>
-  <rect x="214" y="456" width="40" height="112" rx="16" fill="#E4600F"/>
-  <rect x="770" y="456" width="40" height="112" rx="16" fill="#E4600F"/>
-  <polyline points="372,520 430,520 462,452 506,594 548,486 576,520 652,520" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-</g></svg>
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024'><g><circle cx="512" cy="512" r="225" fill="none" stroke="#FFFFFF" stroke-width="72"/><rect x="196" y="432" width="76" height="160" rx="30" fill="#FFFFFF"/><rect x="752" y="432" width="76" height="160" rx="30" fill="#FFFFFF"/><polyline points="372,520 430,520 462,452 506,594 548,486 576,520 652,520" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></g></svg>

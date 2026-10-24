@@ -6,8 +6,6 @@
     <path android:pathData="M287,512 A225,225 0 1,0 737,512 A225,225 0 1,0 287,512" android:strokeColor="#FFFFFF" android:strokeWidth="72" android:fillColor="#00000000"/>
     <path android:pathData="M226,432 H242 A30,30 0 0 1 272,462 V562 A30,30 0 0 1 242,592 H226 A30,30 0 0 1 196,562 V462 A30,30 0 0 1 226,432 Z" android:fillColor="#FFFFFF"/>
     <path android:pathData="M782,432 H798 A30,30 0 0 1 828,462 V562 A30,30 0 0 1 798,592 H782 A30,30 0 0 1 752,562 V462 A30,30 0 0 1 782,432 Z" android:fillColor="#FFFFFF"/>
-    <path android:pathData="M230,456 H238 A16,16 0 0 1 254,472 V552 A16,16 0 0 1 238,568 H230 A16,16 0 0 1 214,552 V472 A16,16 0 0 1 230,456 Z" android:fillColor="#E4600F"/>
-    <path android:pathData="M786,456 H794 A16,16 0 0 1 810,472 V552 A16,16 0 0 1 794,568 H786 A16,16 0 0 1 770,552 V472 A16,16 0 0 1 786,456 Z" android:fillColor="#E4600F"/>
     <path android:pathData="M372,520 L430,520 L462,452 L506,594 L548,486 L576,520 L652,520" android:strokeColor="#FFFFFF" android:strokeWidth="30" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000"/>
     </group>
 </vector>

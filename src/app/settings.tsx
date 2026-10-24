@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Card, colors } from '../components/ui';
+import { Button, Card, colors } from '../components/ui';
 import { getSettings, setSetting, type Settings } from '../lib/db';
 import { openHealthConnectSettings } from '../lib/health';
 import type { DateOrder } from '../lib/parser';
+import { HEALTH_STATUS_TEXT, useHealthStatus } from '../lib/useHealthStatus';
 import { isValidTime } from '../lib/workout';
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [startTime, setStartTime] = useState('');
+  const { status, grant } = useHealthStatus();
 
   useEffect(() => {
     getSettings().then((s) => {
@@ -73,9 +75,31 @@ export default function SettingsScreen() {
       </Card>
 
       <Card>
-        <Pressable onPress={openHealthConnectSettings}>
-          <Text style={styles.link}>Abrir ajustes de Health Connect</Text>
-        </Pressable>
+        <Text style={styles.title}>Health Connect</Text>
+        <Text style={[styles.muted, status === 'ok' && { color: colors.ok }]}>
+          {status ? HEALTH_STATUS_TEXT[status] : 'Comprobando…'}
+        </Text>
+        {status === 'missing-permissions' && (
+          <Button
+            title="Dar permisos"
+            onPress={() => grant().catch((e) => Alert.alert('Health Connect', String(e)))}
+            style={{ marginTop: 12 }}
+          />
+        )}
+        {status && status !== 'unavailable' && (
+          <Pressable onPress={openHealthConnectSettings} style={{ marginTop: 12 }}>
+            <Text style={styles.link}>Abrir ajustes de Health Connect</Text>
+          </Pressable>
+        )}
+      </Card>
+
+      <Card>
+        <Text style={styles.title}>Privacidad</Text>
+        <Text style={styles.muted}>
+          El texto de las fotos se reconoce en el propio móvil y los entrenamientos solo se guardan en esta app y en
+          Health Connect. La app no usa internet, no tiene anuncios ni analítica, y solo comparte datos cuando tú
+          exportas el CSV.
+        </Text>
       </Card>
     </ScrollView>
   );

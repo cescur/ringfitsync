@@ -1,46 +1,27 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Stack, router } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Button, Card, colors } from '../components/ui';
 import { getSettings } from '../lib/db';
-import {
-  getHealthStatus,
-  openHealthConnectSettings,
-  requestHealthPermissions,
-  type HealthStatus,
-} from '../lib/health';
 import { readImage } from '../lib/ocr';
 import { parseWorkoutLog } from '../lib/parser';
 import { setPendingScan } from '../lib/scanStore';
+import { HEALTH_STATUS_TEXT, useHealthStatus } from '../lib/useHealthStatus';
 
-const STATUS_TEXT: Record<HealthStatus, string> = {
-  ok: 'Conectado a Health Connect.',
-  'missing-permissions': 'Falta dar permiso para guardar en Health Connect.',
-  unavailable: 'Health Connect no está disponible en este móvil.',
-  'needs-update': 'Hay que actualizar Health Connect desde Google Play.',
-};
+function HeaderButton({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} hitSlop={8} accessibilityLabel={label} style={styles.headerButton}>
+      <Ionicons name={icon} size={24} color={colors.text} />
+    </Pressable>
+  );
+}
 
 export default function Home() {
-  const [status, setStatus] = useState<HealthStatus | null>(null);
+  const { status, grant } = useHealthStatus();
   const [busy, setBusy] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      getHealthStatus()
-        .then(setStatus)
-        .catch(() => setStatus('unavailable'));
-    }, []),
-  );
-
-  const grant = async () => {
-    try {
-      setStatus(await requestHealthPermissions());
-    } catch (e) {
-      Alert.alert('Health Connect', String(e));
-    }
-  };
 
   const scan = async (source: 'camera' | 'library') => {
     try {
@@ -71,55 +52,109 @@ export default function Home() {
     }
   };
 
+  const healthOk = status === 'ok';
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Card>
-        <Text style={styles.title}>Importar entrenamientos</Text>
-        <Text style={styles.muted}>
-          Haz una foto a la pantalla «Registro de ejercicio» de Ring Fit Adventure o elige una captura de la
-          Switch desde la galería.
-        </Text>
-        <View style={styles.gap}>
-          <Button title="Hacer foto" onPress={() => scan('camera')} loading={busy} />
-          <Button title="Elegir de la galería" variant="secondary" onPress={() => scan('library')} disabled={busy} />
+    <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <View style={styles.headerRight}>
+              <Pressable
+                onPress={() => router.push('/settings')}
+                hitSlop={8}
+                accessibilityLabel={status ? HEALTH_STATUS_TEXT[status] : 'Comprobando Health Connect'}
+                style={styles.headerButton}
+              >
+                <Ionicons
+                  name={healthOk ? 'heart' : 'heart-dislike-outline'}
+                  size={22}
+                  color={status === null ? colors.muted : healthOk ? colors.ok : colors.warn}
+                />
+              </Pressable>
+              <HeaderButton icon="stats-chart-outline" label="Historial" onPress={() => router.push('/history')} />
+              <HeaderButton icon="settings-outline" label="Ajustes" onPress={() => router.push('/settings')} />
+            </View>
+          ),
+        }}
+      />
+
+      {status && !healthOk && (
+        <Card style={styles.warning}>
+          <Text style={styles.warningText}>{HEALTH_STATUS_TEXT[status]}</Text>
+          {status === 'missing-permissions' && (
+            <Button
+              title="Dar permisos"
+              variant="secondary"
+              onPress={() => grant().catch((e) => Alert.alert('Health Connect', String(e)))}
+              style={{ marginTop: 10 }}
+            />
+          )}
+        </Card>
+      )}
+
+      <View style={styles.hero}>
+        <View style={styles.iconCircle}>
+          <Ionicons name="fitness" size={56} color={colors.accent} />
         </View>
-      </Card>
-
-      <Card>
-        <Text style={styles.title}>Health Connect</Text>
-        <Text style={[styles.muted, status === 'ok' && { color: colors.ok }]}>
-          {status ? STATUS_TEXT[status] : 'Comprobando…'}
+        <Text style={styles.title}>Importar entrenamientos</Text>
+        <Text style={styles.subtitle}>
+          Haz una foto a la pantalla «Registro de ejercicio» de Ring Fit Adventure o elige una captura de la Switch.
         </Text>
-        {status === 'missing-permissions' && (
-          <Button title="Dar permisos" onPress={grant} style={{ marginTop: 12 }} />
-        )}
-        {status && status !== 'unavailable' && (
-          <Button
-            title="Abrir Health Connect"
-            variant="secondary"
-            onPress={openHealthConnectSettings}
-            style={{ marginTop: 12 }}
-          />
-        )}
-      </Card>
-
-      <View style={styles.gap}>
-        <Button title="Historial y estadísticas" variant="secondary" onPress={() => router.push('/history')} />
-        <Button title="Ajustes" variant="secondary" onPress={() => router.push('/settings')} />
       </View>
 
-      <Text style={styles.privacy}>
-        Privacidad: el texto se reconoce en el propio móvil y los datos solo se guardan aquí y en Health Connect.
-        La app no se conecta a internet ni comparte nada salvo cuando exportas el CSV.
-      </Text>
-    </ScrollView>
+      <View style={styles.actions}>
+        {busy ? (
+          <View style={styles.busy}>
+            <ActivityIndicator size="large" color={colors.accent} />
+            <Text style={styles.subtitle}>Leyendo la imagen…</Text>
+          </View>
+        ) : (
+          <>
+            <Pressable
+              onPress={() => scan('camera')}
+              style={({ pressed }) => [styles.bigButton, pressed && { opacity: 0.85 }]}
+              accessibilityRole="button"
+            >
+              <Ionicons name="camera" size={28} color={colors.accentText} />
+              <Text style={styles.bigButtonText}>Hacer foto</Text>
+            </Pressable>
+            <Button title="Elegir de la galería" variant="secondary" onPress={() => scan('library')} />
+          </>
+        )}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 16 },
-  title: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 6 },
-  muted: { fontSize: 15, color: colors.muted, lineHeight: 21 },
-  gap: { gap: 10, marginTop: 12 },
-  privacy: { fontSize: 13, color: colors.muted, lineHeight: 18, marginTop: 4 },
+  container: { flex: 1, padding: 20, gap: 16 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  headerButton: { padding: 6 },
+  warning: { borderColor: colors.warn },
+  warningText: { fontSize: 15, color: colors.warn, lineHeight: 21 },
+  hero: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  iconCircle: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    backgroundColor: '#FDE9DE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  title: { fontSize: 26, fontWeight: '800', color: colors.text, textAlign: 'center' },
+  subtitle: { fontSize: 16, color: colors.muted, lineHeight: 22, textAlign: 'center', paddingHorizontal: 8 },
+  actions: { gap: 12, paddingBottom: 12 },
+  bigButton: {
+    minHeight: 64,
+    borderRadius: 16,
+    backgroundColor: colors.accent,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  bigButtonText: { color: colors.accentText, fontSize: 19, fontWeight: '700' },
+  busy: { alignItems: 'center', gap: 10, paddingVertical: 20 },
 });

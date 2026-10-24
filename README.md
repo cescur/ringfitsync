@@ -108,7 +108,6 @@ The screenshot in `app/src/test/resources` is used only as a test case.
 
 - Parsing approach inspired by [RingFitConnect](https://github.com/watanabetoshinori/RingFitConnect)
   by Toshinori Watanabe (MIT), the equivalent app for iOS and HealthKit.
-- An earlier version of this app was built with Expo; it is kept under the `expo-v1` tag.
 - Code released under the [MIT license](LICENSE).
 
 ---
@@ -220,5 +219,4 @@ de Google LLC. La captura de `app/src/test/resources` se usa solo como caso de p
 
 - La lógica de lectura se inspira en [RingFitConnect](https://github.com/watanabetoshinori/RingFitConnect)
   de Toshinori Watanabe (MIT), la app equivalente para iOS y HealthKit.
-- Una versión anterior de esta app se hizo con Expo; se conserva en la etiqueta `expo-v1`.
 - Código bajo [licencia MIT](LICENSE).

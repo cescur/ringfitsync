@@ -99,7 +99,8 @@ export async function writeWorkout(w: Workout): Promise<void> {
       metadata: meta(ids.distance),
     });
   }
-  await insertRecords(records);
+  // Health Connect exige que cada llamada lleve registros de un solo tipo.
+  for (const record of records) await insertRecords([record]);
 }
 
 export async function deleteWorkoutFromHealth(w: Workout): Promise<void> {

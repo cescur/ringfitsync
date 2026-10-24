@@ -49,6 +49,11 @@ android {
         compose = true
     }
 
+    // Permite elegir el idioma de la app (inglés o español) en los ajustes de Android.
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     // El OCR de ML Kit pesa ~11 MB por arquitectura: un APK por procesador ARM (los de los móviles
     // reales), con las librerías nativas comprimidas.
     splits {

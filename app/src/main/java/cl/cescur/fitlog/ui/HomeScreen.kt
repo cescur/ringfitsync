@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -73,7 +74,7 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
                 context.app.pendingScan = Scan(uri, lines, workouts)
                 onScanned()
             } catch (e: Exception) {
-                Log.e("FitLog", "No se pudo leer la imagen", e)
+                Log.e("FitLog", "readImage failed", e)
                 error = e.toString()
             } finally {
                 busy = false
@@ -95,7 +96,7 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
                 IconButton(onClick = onSettings) {
                     Icon(
                         if (ok) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                        contentDescription = health.status?.text ?: "Comprobando Health Connect",
+                        contentDescription = health.status?.let { stringResource(it.text) } ?: stringResource(R.string.checking_health),
                         tint = when (health.status) {
                             null -> Muted
                             HealthStatus.OK -> Ok
@@ -103,8 +104,8 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
                         },
                     )
                 }
-                IconButton(onClick = onHistory) { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Historial") }
-                IconButton(onClick = onSettings) { Icon(Icons.Filled.Settings, contentDescription = "Ajustes") }
+                IconButton(onClick = onHistory) { Icon(Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.history)) }
+                IconButton(onClick = onSettings) { Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings)) }
             }
         },
     ) { padding ->
@@ -115,9 +116,9 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
             val status = health.status
             if (status != null && status != HealthStatus.OK) {
                 SectionCard(borderColor = Warn) {
-                    MutedText(status.text, color = Warn)
+                    MutedText(stringResource(status.text), color = Warn)
                     if (status == HealthStatus.MISSING_PERMISSIONS) {
-                        OutlinedButton(onClick = health.grant, modifier = Modifier.fillMaxWidth()) { Text("Dar permisos") }
+                        OutlinedButton(onClick = health.grant, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.grant_permissions)) }
                     }
                 }
             }
@@ -134,10 +135,10 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
                     Icon(painterResource(R.drawable.ic_ring), contentDescription = null, tint = Accent, modifier = Modifier.size(84.dp))
                 }
                 Spacer(Modifier.height(20.dp))
-                Text("Importar entrenamientos", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.home_title), fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    "Haz una foto a la pantalla «Registro de ejercicio» de Ring Fit Adventure o elige una captura de la Switch.",
+                    stringResource(R.string.home_subtitle),
                     style = MaterialTheme.typography.bodyLarge,
                     color = Muted,
                     textAlign = TextAlign.Center,
@@ -148,7 +149,7 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
                 Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
                     Spacer(Modifier.height(10.dp))
-                    MutedText("Leyendo la imagen…")
+                    MutedText(stringResource(R.string.home_reading))
                 }
             } else {
                 Button(
@@ -161,12 +162,12 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
                     },
                     modifier = Modifier.fillMaxWidth().height(64.dp),
                     shape = RoundedCornerShape(16.dp),
-                ) { Text("Hacer foto", fontSize = 19.sp, fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.home_take_photo), fontSize = 19.sp, fontWeight = FontWeight.Bold) }
                 OutlinedButton(
                     onClick = { pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(12.dp),
-                ) { Text("Elegir de la galería", fontSize = 16.sp) }
+                ) { Text(stringResource(R.string.home_pick_gallery), fontSize = 16.sp) }
             }
         }
     }
@@ -174,9 +175,9 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
     error?.let { msg ->
         AlertDialog(
             onDismissRequest = { error = null },
-            title = { Text("No se pudo leer la imagen") },
+            title = { Text(stringResource(R.string.home_read_error)) },
             text = { Text(msg) },
-            confirmButton = { TextButton(onClick = { error = null }) { Text("Aceptar") } },
+            confirmButton = { TextButton(onClick = { error = null }) { Text(stringResource(R.string.ok)) } },
         )
     }
 }

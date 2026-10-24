@@ -2,6 +2,7 @@ package cl.cescur.fitlog.health
 
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.StringRes
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -12,13 +13,14 @@ import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
+import cl.cescur.fitlog.R
 import cl.cescur.fitlog.data.Workout
 
-enum class HealthStatus(val text: String) {
-    OK("Conectado a Health Connect."),
-    MISSING_PERMISSIONS("Falta dar permiso para guardar en Health Connect."),
-    UNAVAILABLE("Health Connect no está disponible en este móvil."),
-    NEEDS_UPDATE("Hay que actualizar Health Connect desde Google Play."),
+enum class HealthStatus(@StringRes val text: Int) {
+    OK(R.string.health_ok),
+    MISSING_PERMISSIONS(R.string.health_missing),
+    UNAVAILABLE(R.string.health_unavailable),
+    NEEDS_UPDATE(R.string.health_needs_update),
 }
 
 object HealthConnect {

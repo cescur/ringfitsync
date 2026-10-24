@@ -8,6 +8,8 @@ import java.time.LocalTime
 private fun w(date: String, start: String, sec: Int, kcal: Double?, m: Int?) =
     Workout(LocalDate.parse(date), LocalTime.parse(start), sec, kcal, m)
 
+private val months = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+
 private val ws = listOf(
     w("2026-10-19", "19:00", 1200, 60.0, 1000), // lunes
     w("2026-10-25", "19:00", 1800, 90.0, null), // domingo
@@ -25,7 +27,7 @@ class StatsTest {
 
     @Test
     fun `totales y medias por semana`() {
-        val weeks = weeklyStats(ws)
+        val weeks = weeklyStats(ws, months)
         assertEquals(listOf("2026-10-26", "2026-10-19", "2026-09-28"), weeks.map { it.key })
         val w = weeks[1]
         assertEquals(2, w.sessions)
@@ -39,7 +41,7 @@ class StatsTest {
     fun `totales por mes`() {
         assertEquals(
             listOf(Triple("2026-10", "oct 2026", 3), Triple("2026-09", "sep 2026", 1)),
-            monthlyStats(ws).map { Triple(it.key, it.label, it.sessions) },
+            monthlyStats(ws, months).map { Triple(it.key, it.label, it.sessions) },
         )
     }
 
@@ -47,7 +49,7 @@ class StatsTest {
     fun `CSV ordenado por fecha con campos vacíos`() {
         assertEquals(
             listOf(
-                "fecha,hora_inicio,duracion,duracion_seg,kcal,distancia_km",
+                "date,start_time,duration,duration_sec,kcal,distance_km",
                 "2026-09-30,19:00,0:15:00,900,45,0.70",
                 "2026-10-19,19:00,0:20:00,1200,60,1.00",
             ),

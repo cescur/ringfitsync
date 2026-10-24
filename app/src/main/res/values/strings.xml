@@ -1,4 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">FitLog</string>
+    <string name="app_name" translatable="false">FitLog</string>
+
+    <!-- Common -->
+    <string name="back">Back</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="delete">Delete</string>
+    <string name="history">History</string>
+    <string name="settings">Settings</string>
+    <string name="grant_permissions">Grant permissions</string>
+    <string name="checking">Checking…</string>
+    <string name="checking_health">Checking Health Connect</string>
+    <string name="share_text">Share text</string>
+
+    <!-- Health Connect -->
+    <string name="health_ok">Connected to Health Connect.</string>
+    <string name="health_missing">Permission to save to Health Connect is missing.</string>
+    <string name="health_unavailable">Health Connect is not available on this phone.</string>
+    <string name="health_needs_update">Health Connect needs an update from Google Play.</string>
+
+    <!-- Home -->
+    <string name="home_title">Import workouts</string>
+    <string name="home_subtitle">Take a photo of the “Exercise Log” screen in Ring Fit Adventure or pick a Switch screenshot.</string>
+    <string name="home_take_photo">Take photo</string>
+    <string name="home_pick_gallery">Choose from gallery</string>
+    <string name="home_reading">Reading the image…</string>
+    <string name="home_read_error">Couldn’t read the image</string>
+
+    <!-- Review -->
+    <string name="review_title">Review workouts</string>
+    <string name="review_no_scan">There is no image waiting for review.</string>
+    <string name="review_nothing_found">No workouts were found in the image. Try another photo with less glare, or add the day manually.</string>
+    <string name="review_image">Imported image</string>
+    <string name="review_new_day">New day</string>
+    <string name="review_no_activity">No activity this day.</string>
+    <string name="review_date_today">The image had no date, so today’s date is used.</string>
+    <string name="review_already_saved">Already saved.</string>
+    <string name="review_replaces">There is already a record for this day (%1$s). Saving replaces it.</string>
+    <string name="field_date">Date</string>
+    <string name="field_pick">Choose</string>
+    <string name="field_start_time">Start time</string>
+    <string name="field_duration">Duration</string>
+    <string name="field_kcal">Calories (kcal)</string>
+    <string name="field_distance">Distance (km)</string>
+    <string name="review_add_day">Add a day manually</string>
+    <string name="review_save">Save selected</string>
+    <string name="review_saving">Saving…</string>
+    <string name="review_show_text">Show recognized text</string>
+    <string name="review_hide_text">Hide recognized text</string>
+    <string name="review_empty_text">(empty)</string>
+    <string name="review_local_only_title">No Health Connect permission</string>
+    <string name="review_local_only_body">Can’t save to Health Connect right now. Save only to the app history?</string>
+    <string name="review_save_here">Save here</string>
+    <string name="review_nothing_title">Nothing to save</string>
+    <string name="review_nothing_body">Select at least one day.</string>
+    <string name="review_check_title">Check the data</string>
+    <string name="review_saved">Saved</string>
+    <string name="review_saved_errors">Saved with errors</string>
+    <string name="review_view_history">View history</string>
+    <plurals name="review_saved_health">
+        <item quantity="one">%d workout saved to Health Connect and to the history.</item>
+        <item quantity="other">%d workouts saved to Health Connect and to the history.</item>
+    </plurals>
+    <plurals name="review_saved_local">
+        <item quantity="one">%d workout saved to the history.</item>
+        <item quantity="other">%d workouts saved to the history.</item>
+    </plurals>
+    <string name="error_no_date">the date is missing</string>
+    <string name="error_no_duration">the duration is missing (H:MM:SS)</string>
+    <string name="error_kcal">invalid calories</string>
+    <string name="error_distance">invalid distance</string>
+
+    <!-- History -->
+    <string name="tab_workouts">Workouts</string>
+    <string name="tab_weeks">Weeks</string>
+    <string name="tab_months">Months</string>
+    <string name="history_empty">No workouts saved yet.</string>
+    <string name="history_local_only">Only in the history (not in Health Connect).</string>
+    <string name="history_export">Export all to CSV</string>
+    <string name="history_export_failed">Couldn’t export: %1$s</string>
+    <string name="history_delete_title">Delete workout</string>
+    <string name="history_delete_body">Delete the workout from %1$s? It is also deleted from Health Connect.</string>
+    <string name="history_delete_failed">Couldn’t delete from Health Connect: %1$s</string>
+    <string name="history_total">Total: %1$s · %2$s · %3$s</string>
+    <string name="history_average">Average: %1$s · %2$s · %3$s</string>
+    <plurals name="history_days">
+        <item quantity="one">%d day of exercise</item>
+        <item quantity="other">%d days of exercise</item>
+    </plurals>
+    <string-array name="months_short">
+        <item>Jan</item><item>Feb</item><item>Mar</item><item>Apr</item><item>May</item><item>Jun</item>
+        <item>Jul</item><item>Aug</item><item>Sep</item><item>Oct</item><item>Nov</item><item>Dec</item>
+    </string-array>
+
+    <!-- Settings -->
+    <string name="settings_import">Import</string>
+    <string name="settings_date_format">Game date format</string>
+    <string name="settings_date_format_hint">If a number is greater than 12, the order is worked out automatically.</string>
+    <string name="settings_dmy">Day/month (29/11)</string>
+    <string name="settings_mdy">Month/day (11/29)</string>
+    <string name="settings_start_time">Default start time</string>
+    <string name="settings_start_time_hint">%1$s · the game doesn’t store the time, you can change it when reviewing</string>
+    <string name="settings_health_status">Status</string>
+    <string name="settings_open_health">Open Health Connect</string>
+    <string name="settings_open_health_hint">Permissions and saved data</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="settings_privacy_hint">Everything stays on your phone</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_source">Source code</string>
+    <string name="settings_inspired">Inspired by RingFitConnect</string>
+    <string name="settings_inspired_hint">By Toshinori Watanabe, MIT license</string>
+    <string name="settings_license">License</string>
+    <string name="settings_license_hint">MIT, free software</string>
+    <string name="settings_ai">Made with AI</string>
+    <string name="settings_ai_hint">Built with Claude Code, directed and tested by its author.</string>
+    <string name="settings_legal">Legal notice</string>
+    <string name="settings_legal_hint">Not affiliated with, sponsored or endorsed by Nintendo. Nintendo Switch and Ring Fit Adventure are trademarks of Nintendo. Health Connect is a trademark of Google LLC.</string>
+
+    <!-- Privacy -->
+    <string name="privacy_heading">How FitLog uses your data</string>
+    <string name="privacy_text">Text in your photos is recognized on the phone itself, and workouts are only stored in this app and in Health Connect. The app doesn’t use the internet, has no ads or analytics, and only shares data when you export the CSV.</string>
+    <string name="privacy_text_health">FitLog only writes exercise sessions, active calories and distance to Health Connect for the days you confirm, and reads those same types so it can replace or delete what it saved.</string>
 </resources>

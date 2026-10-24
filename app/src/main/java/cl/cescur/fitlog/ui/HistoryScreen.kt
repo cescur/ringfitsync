@@ -30,7 +30,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import cl.cescur.fitlog.R
 import androidx.core.content.FileProvider
 import cl.cescur.fitlog.data.PeriodStats
 import cl.cescur.fitlog.data.Workout
@@ -44,16 +49,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.LocalDate
-import java.util.Locale
-
-private fun km(m: Int?) = m?.let { String.format(Locale.ROOT, "%.2f km", it / 1000.0).replace('.', ',') } ?: "–"
-
-private fun kcal(v: Double?) = v?.let { String.format(Locale.ROOT, "%.1f kcal", it).replace('.', ',') } ?: "–"
 
 @Composable
 fun HistoryScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val app = context.app
+    val res = LocalResources.current
     val scope = rememberCoroutineScope()
     var workouts by remember { mutableStateOf<List<Workout>>(emptyList()) }
     var tab by remember { mutableIntStateOf(0) }
@@ -61,8 +62,9 @@ fun HistoryScreen(onBack: () -> Unit) {
     var reload by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(reload) { workouts = withContext(Dispatchers.IO) { app.db.list() } }
-    val weeks = remember(workouts) { weeklyStats(workouts) }
-    val months = remember(workouts) { monthlyStats(workouts) }
+    val monthNames = stringArrayResource(R.array.months_short).toList()
+    val weeks = remember(workouts, monthNames) { weeklyStats(workouts, monthNames) }
+    val months = remember(workouts, monthNames) { monthlyStats(workouts, monthNames) }
 
     fun exportCsv() {
         try {
@@ -73,20 +75,20 @@ fun HistoryScreen(onBack: () -> Unit) {
                 .setType("text/csv")
                 .putExtra(Intent.EXTRA_STREAM, uri)
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            context.startActivity(Intent.createChooser(send, "Exportar CSV"))
+            context.startActivity(Intent.createChooser(send, res.getString(R.string.history_export)))
         } catch (e: Exception) {
-            Toast.makeText(context, "No se pudo exportar: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, res.getString(R.string.history_export_failed, e.message), Toast.LENGTH_LONG).show()
         }
     }
 
-    Scaffold(topBar = { AppBar("Historial", onBack = onBack) }) { padding ->
+    Scaffold(topBar = { AppBar(stringResource(R.string.history), onBack = onBack) }) { padding ->
         LazyColumn(
             Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                val labels = listOf("Entrenamientos", "Semanas", "Meses")
+                val labels = listOf(R.string.tab_workouts, R.string.tab_weeks, R.string.tab_months).map { stringResource(it) }
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     labels.forEachIndexed { i, label ->
                         SegmentedButton(
@@ -98,24 +100,24 @@ fun HistoryScreen(onBack: () -> Unit) {
                     }
                 }
             }
-            if (workouts.isEmpty()) item { MutedText("Todavía no hay entrenamientos guardados.") }
+            if (workouts.isEmpty()) item { MutedText(stringResource(R.string.history_empty)) }
             when (tab) {
                 0 -> items(workouts, key = { it.id }) { w ->
                     SectionCard {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             CardTitle("${w.date} · ${w.startTime}")
                             Box(Modifier.weight(1f))
-                            TextButton(onClick = { toDelete = w }) { Text("Borrar", color = androidx.compose.material3.MaterialTheme.colorScheme.error) }
+                            TextButton(onClick = { toDelete = w }) { Text(stringResource(R.string.delete), color = androidx.compose.material3.MaterialTheme.colorScheme.error) }
                         }
-                        Text("${formatDuration(w.durationSec)} · ${kcal(w.kcal)} · ${km(w.distanceM)}")
-                        if (!w.inHealthConnect) MutedText("Solo en el historial (no está en Health Connect).")
+                        Text("${formatDuration(w.durationSec)} · ${formatKcal(w.kcal)} · ${formatKm(w.distanceM)}")
+                        if (!w.inHealthConnect) MutedText(stringResource(R.string.history_local_only))
                     }
                 }
                 1 -> items(weeks, key = { it.key }) { PeriodCard(it) }
                 else -> items(months, key = { it.key }) { PeriodCard(it) }
             }
             if (workouts.isNotEmpty()) {
-                item { OutlinedButton(onClick = ::exportCsv, modifier = Modifier.fillMaxWidth()) { Text("Exportar todo a CSV") } }
+                item { OutlinedButton(onClick = ::exportCsv, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.history_export)) } }
             }
         }
     }
@@ -123,8 +125,8 @@ fun HistoryScreen(onBack: () -> Unit) {
     toDelete?.let { w ->
         AlertDialog(
             onDismissRequest = { toDelete = null },
-            title = { Text("Borrar entrenamiento") },
-            text = { Text("¿Borrar el del ${w.date}? También se borra de Health Connect.") },
+            title = { Text(stringResource(R.string.history_delete_title)) },
+            text = { Text(stringResource(R.string.history_delete_body, w.date.toString())) },
             confirmButton = {
                 TextButton(onClick = {
                     toDelete = null
@@ -134,12 +136,12 @@ fun HistoryScreen(onBack: () -> Unit) {
                             withContext(Dispatchers.IO) { app.db.delete(w.id) }
                             reload++
                         } catch (e: Exception) {
-                            Toast.makeText(context, "No se pudo borrar de Health Connect: ${e.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, res.getString(R.string.history_delete_failed, e.message), Toast.LENGTH_LONG).show()
                         }
                     }
-                }) { Text("Borrar") }
+                }) { Text(stringResource(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { toDelete = null }) { Text("Cancelar") } },
+            dismissButton = { TextButton(onClick = { toDelete = null }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 }
@@ -148,8 +150,8 @@ fun HistoryScreen(onBack: () -> Unit) {
 private fun PeriodCard(p: PeriodStats) {
     SectionCard {
         CardTitle(p.label)
-        MutedText("${p.sessions} día${if (p.sessions == 1) "" else "s"} de ejercicio")
-        Text("Total: ${formatDuration(p.totalSec)} · ${kcal(p.totalKcal)} · ${km(p.totalM)}")
-        Text("Media: ${formatDuration(p.avgSec)} · ${kcal(p.avgKcal)} · ${km(p.avgM)}")
+        MutedText(pluralStringResource(R.plurals.history_days, p.sessions, p.sessions))
+        Text(stringResource(R.string.history_total, formatDuration(p.totalSec), formatKcal(p.totalKcal), formatKm(p.totalM)))
+        Text(stringResource(R.string.history_average, formatDuration(p.avgSec), formatKcal(p.avgKcal), formatKm(p.avgM)))
     }
 }

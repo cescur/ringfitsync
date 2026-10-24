@@ -48,10 +48,14 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.StringRes
+import cl.cescur.fitlog.R
 import cl.cescur.fitlog.data.Workout
 import cl.cescur.fitlog.health.HealthConnect
 import cl.cescur.fitlog.health.HealthStatus
@@ -67,7 +71,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.Locale
 
 private data class Draft(
     val key: String,
@@ -80,10 +83,6 @@ private data class Draft(
     val dateIsToday: Boolean = false,
 )
 
-private fun decimal(v: Double, digits: Int? = null): String =
-    (if (digits != null) String.format(Locale.ROOT, "%.${digits}f", v) else v.toBigDecimal().stripTrailingZeros().toPlainString())
-        .replace('.', ',')
-
 private fun ParsedWorkout.toDraft(startTime: LocalTime, i: Int) = Draft(
     key = "$i-$date",
     // Un día con 0:00:00 (sin actividad) no se marca.
@@ -91,27 +90,27 @@ private fun ParsedWorkout.toDraft(startTime: LocalTime, i: Int) = Draft(
     date = date,
     startTime = startTime,
     duration = durationSec?.let(::formatDuration) ?: "",
-    kcal = kcal?.let { decimal(it) } ?: "",
-    km = distanceM?.let { decimal(it / 1000.0, 2) } ?: "",
+    kcal = kcal?.let { formatDecimalInput(it) } ?: "",
+    km = distanceM?.let { formatDecimalInput(it / 1000.0, 2) } ?: "",
     dateIsToday = dateIsToday,
 )
 
 private sealed interface Checked {
     data class Valid(val workout: Workout) : Checked
-    data class Invalid(val draft: Draft, val error: String) : Checked
+    data class Invalid(val draft: Draft, @StringRes val error: Int) : Checked
 }
 
 private fun validate(d: Draft): Checked {
-    val date = d.date ?: return Checked.Invalid(d, "falta la fecha")
+    val date = d.date ?: return Checked.Invalid(d, R.string.error_no_date)
     val durationSec = parseDurationInput(d.duration)?.takeIf { it > 0 }
-        ?: return Checked.Invalid(d, "falta la duración (H:MM:SS)")
+        ?: return Checked.Invalid(d, R.string.error_no_duration)
     val kcal = when (val k = parseDecimalInput(d.kcal)) {
-        DecimalInput.Invalid -> return Checked.Invalid(d, "calorías no válidas")
+        DecimalInput.Invalid -> return Checked.Invalid(d, R.string.error_kcal)
         DecimalInput.Empty -> null
         is DecimalInput.Value -> k.value
     }
     val distanceM = when (val k = parseDecimalInput(d.km)) {
-        DecimalInput.Invalid -> return Checked.Invalid(d, "distancia no válida")
+        DecimalInput.Invalid -> return Checked.Invalid(d, R.string.error_distance)
         DecimalInput.Empty -> null
         is DecimalInput.Value -> Math.round(k.value * 1000).toInt()
     }
@@ -134,6 +133,7 @@ private suspend fun loadPreview(context: Context, uri: Uri): ImageBitmap? = with
 fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
     val context = LocalContext.current
     val app = context.app
+    val res = LocalResources.current
     val scan = remember { app.pendingScan }
     val scope = rememberCoroutineScope()
     val drafts = remember { mutableStateListOf<Draft>() }
@@ -187,10 +187,9 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
             }
             saving = false
             val ok = workouts.size - failures.size
-            val where = if (useHealth) " en Health Connect y" else ""
-            val summary = "$ok entrenamiento${if (ok == 1) "" else "s"} guardado${if (ok == 1) "" else "s"}$where en el historial."
+            val summary = res.getQuantityString(if (useHealth) R.plurals.review_saved_health else R.plurals.review_saved_local, ok, ok)
             savedOk = true
-            message = (if (failures.isEmpty()) "Guardado" else "Guardado con errores") to
+            message = res.getString(if (failures.isEmpty()) R.string.review_saved else R.string.review_saved_errors) to
                 (listOf(summary) + failures).joinToString("\n")
         }
     }
@@ -198,12 +197,14 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
     fun save() {
         val selected = drafts.filter { it.checked }.map(::validate)
         if (selected.isEmpty()) {
-            message = "Nada que guardar" to "Marca al menos un día."
+            message = res.getString(R.string.review_nothing_title) to res.getString(R.string.review_nothing_body)
             return
         }
         val errors = selected.filterIsInstance<Checked.Invalid>()
         if (errors.isNotEmpty()) {
-            message = "Revisa los datos" to errors.joinToString("\n") { "${it.draft.date ?: "Día nuevo"}: ${it.error}" }
+            message = res.getString(R.string.review_check_title) to errors.joinToString("\n") {
+                "${it.draft.date ?: res.getString(R.string.review_new_day)}: ${res.getString(it.error)}"
+            }
             return
         }
         val workouts = selected.filterIsInstance<Checked.Valid>().map { it.workout }
@@ -213,9 +214,9 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
         }
     }
 
-    Scaffold(topBar = { AppBar("Revisar entrenamientos", onBack = onBack) }) { padding ->
+    Scaffold(topBar = { AppBar(stringResource(R.string.review_title), onBack = onBack) }) { padding ->
         if (scan == null) {
-            Box(Modifier.fillMaxSize().padding(padding).padding(16.dp)) { MutedText("No hay ninguna imagen pendiente de revisar.") }
+            Box(Modifier.fillMaxSize().padding(padding).padding(16.dp)) { MutedText(stringResource(R.string.review_no_scan)) }
             return@Scaffold
         }
         LazyColumn(
@@ -227,13 +228,13 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
                 Box(
                     Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color(0xFFE3E7EC)),
                 ) {
-                    preview?.let { Image(it, contentDescription = "Imagen importada", contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize()) }
+                    preview?.let { Image(it, contentDescription = stringResource(R.string.review_image), contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize()) }
                 }
             }
             if (drafts.isEmpty()) {
                 item {
                     SectionCard {
-                        MutedText("No he encontrado entrenamientos en la imagen. Prueba otra foto con menos reflejos, o añade el día a mano.")
+                        MutedText(stringResource(R.string.review_nothing_found))
                     }
                 }
             }
@@ -243,27 +244,27 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
                 val other = if (sameSaved) null else existing.firstOrNull { it.date == d.date }
                 SectionCard(Modifier.alpha(if (d.checked) 1f else 0.6f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        CardTitle(d.date?.toString() ?: "Día nuevo")
+                        CardTitle(d.date?.toString() ?: stringResource(R.string.review_new_day))
                         Box(Modifier.weight(1f))
                         Switch(checked = d.checked, onCheckedChange = { v -> update(d.key) { it.copy(checked = v) } })
                     }
-                    if (durationSec == 0) MutedText("Sin actividad este día.")
-                    if (d.dateIsToday) MutedText("La imagen no tenía fecha: se usa la de hoy.")
-                    if (sameSaved) MutedText("Ya está guardado.")
-                    other?.let { MutedText("Ya hay un registro de este día (${formatDuration(it.durationSec)}). Si lo guardas, se reemplaza.", color = Warn) }
+                    if (durationSec == 0) MutedText(stringResource(R.string.review_no_activity))
+                    if (d.dateIsToday) MutedText(stringResource(R.string.review_date_today))
+                    if (sameSaved) MutedText(stringResource(R.string.review_already_saved))
+                    other?.let { MutedText(stringResource(R.string.review_replaces, formatDuration(it.durationSec)), color = Warn) }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        PickerBox("Fecha", d.date?.toString() ?: "Elegir", Modifier.weight(1f), Icons.Outlined.Event) {
+                        PickerBox(stringResource(R.string.field_date), d.date?.toString() ?: stringResource(R.string.field_pick), Modifier.weight(1f), Icons.Outlined.Event) {
                             showDatePicker(context, d.date ?: LocalDate.now()) { v -> update(d.key) { it.copy(date = v) } }
                         }
-                        PickerBox("Hora de inicio", d.startTime.toString(), Modifier.weight(1f), Icons.Outlined.Schedule) {
+                        PickerBox(stringResource(R.string.field_start_time), d.startTime.toString(), Modifier.weight(1f), Icons.Outlined.Schedule) {
                             showTimePicker(context, d.startTime) { v -> update(d.key) { it.copy(startTime = v) } }
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        NumberField("Duración", d.duration, "0:20:49", KeyboardType.Text, Modifier.weight(1f)) { v -> update(d.key) { it.copy(duration = v) } }
-                        NumberField("Calorías (kcal)", d.kcal, "74,25", KeyboardType.Decimal, Modifier.weight(1f)) { v -> update(d.key) { it.copy(kcal = v) } }
+                        NumberField(stringResource(R.string.field_duration), d.duration, "0:20:49", KeyboardType.Text, Modifier.weight(1f)) { v -> update(d.key) { it.copy(duration = v) } }
+                        NumberField(stringResource(R.string.field_kcal), d.kcal, "74,25", KeyboardType.Decimal, Modifier.weight(1f)) { v -> update(d.key) { it.copy(kcal = v) } }
                     }
-                    NumberField("Distancia (km)", d.km, "1,23", KeyboardType.Decimal, Modifier.fillMaxWidth(0.5f)) { v -> update(d.key) { it.copy(km = v) } }
+                    NumberField(stringResource(R.string.field_distance), d.km, "1,23", KeyboardType.Decimal, Modifier.fillMaxWidth(0.5f)) { v -> update(d.key) { it.copy(km = v) } }
                 }
             }
             item {
@@ -272,16 +273,16 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
                         drafts += Draft("manual-${System.currentTimeMillis()}", true, null, app.settings.defaultStartTime, "", "", "")
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
-                ) { Text("Añadir un día a mano") }
+                ) { Text(stringResource(R.string.review_add_day)) }
             }
             item {
                 Button(onClick = ::save, enabled = !saving, modifier = Modifier.fillMaxWidth().height(54.dp)) {
-                    Text(if (saving) "Guardando…" else "Guardar seleccionados", fontSize = 17.sp)
+                    Text(stringResource(if (saving) R.string.review_saving else R.string.review_save), fontSize = 17.sp)
                 }
             }
             item {
                 Text(
-                    (if (showText) "Ocultar" else "Ver") + " el texto reconocido",
+                    stringResource(if (showText) R.string.review_hide_text else R.string.review_show_text),
                     color = Accent,
                     modifier = Modifier.fillMaxWidth().clickable { showText = !showText }.padding(8.dp),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -290,14 +291,14 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
             if (showText) {
                 item {
                     SectionCard {
-                        Text(ocrText.ifEmpty { "(vacío)" }, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+                        Text(ocrText.ifEmpty { stringResource(R.string.review_empty_text) }, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                         OutlinedButton(
                             onClick = {
                                 val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, ocrText)
-                                context.startActivity(Intent.createChooser(send, "Compartir texto"))
+                                context.startActivity(Intent.createChooser(send, res.getString(R.string.share_text)))
                             },
                             modifier = Modifier.fillMaxWidth(),
-                        ) { Text("Compartir texto") }
+                        ) { Text(stringResource(R.string.share_text)) }
                     }
                 }
             }
@@ -307,10 +308,10 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
     askLocalOnly?.let { workouts ->
         AlertDialog(
             onDismissRequest = { askLocalOnly = null },
-            title = { Text("Health Connect sin permisos") },
-            text = { Text("No se puede guardar en Health Connect ahora. ¿Guardar solo en el historial de la app?") },
-            confirmButton = { TextButton(onClick = { askLocalOnly = null; persist(workouts, false) }) { Text("Guardar aquí") } },
-            dismissButton = { TextButton(onClick = { askLocalOnly = null }) { Text("Cancelar") } },
+            title = { Text(stringResource(R.string.review_local_only_title)) },
+            text = { Text(stringResource(R.string.review_local_only_body)) },
+            confirmButton = { TextButton(onClick = { askLocalOnly = null; persist(workouts, false) }) { Text(stringResource(R.string.review_save_here)) } },
+            dismissButton = { TextButton(onClick = { askLocalOnly = null }) { Text(stringResource(R.string.cancel)) } },
         )
     }
     message?.let { (title, body) ->
@@ -322,7 +323,7 @@ fun ReviewScreen(onBack: () -> Unit, onSaved: () -> Unit) {
                 TextButton(onClick = {
                     message = null
                     if (savedOk) onSaved()
-                }) { Text(if (savedOk) "Ver historial" else "Aceptar") }
+                }) { Text(stringResource(if (savedOk) R.string.review_view_history else R.string.ok)) }
             },
         )
     }

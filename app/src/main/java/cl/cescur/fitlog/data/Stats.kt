@@ -20,8 +20,6 @@ data class PeriodStats(
     val avgM: Int get() = totalM / sessions
 }
 
-private val MONTHS_ES = listOf("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
-
 /** Lunes de la semana de la fecha dada. */
 fun weekStart(date: LocalDate): LocalDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
@@ -39,21 +37,22 @@ private fun summarize(groups: Map<String, List<Workout>>, label: (String) -> Str
             )
         }
 
-fun weeklyStats(ws: List<Workout>): List<PeriodStats> =
+/** [months] son los nombres cortos de los meses en el idioma de la app, de enero a diciembre. */
+fun weeklyStats(ws: List<Workout>, months: List<String>): List<PeriodStats> =
     summarize(ws.groupBy { weekStart(it.date).toString() }) { key ->
         val s = LocalDate.parse(key)
         val e = s.plusDays(6)
-        "${s.dayOfMonth} ${MONTHS_ES[s.monthValue - 1]} – ${e.dayOfMonth} ${MONTHS_ES[e.monthValue - 1]} ${e.year}"
+        "${s.dayOfMonth} ${months[s.monthValue - 1]} – ${e.dayOfMonth} ${months[e.monthValue - 1]} ${e.year}"
     }
 
-fun monthlyStats(ws: List<Workout>): List<PeriodStats> =
+fun monthlyStats(ws: List<Workout>, months: List<String>): List<PeriodStats> =
     summarize(ws.groupBy { YearMonth.from(it.date).toString() }) { key ->
         val ym = YearMonth.parse(key)
-        "${MONTHS_ES[ym.monthValue - 1]} ${ym.year}"
+        "${months[ym.monthValue - 1]} ${ym.year}"
     }
 
 fun toCsv(ws: List<Workout>): String {
-    val header = "fecha,hora_inicio,duracion,duracion_seg,kcal,distancia_km"
+    val header = "date,start_time,duration,duration_sec,kcal,distance_km"
     val lines = ws.sortedBy { it.date }.map { w ->
         listOf(
             w.date.toString(),

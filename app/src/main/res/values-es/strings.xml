@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Común -->
+    <string name="back">Volver</string>
+    <string name="ok">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="close">Cerrar</string>
+    <string name="delete">Borrar</string>
+    <string name="history">Historial</string>
+    <string name="settings">Ajustes</string>
+    <string name="grant_permissions">Dar permisos</string>
+    <string name="checking">Comprobando…</string>
+    <string name="checking_health">Comprobando Health Connect</string>
+    <string name="share_text">Compartir texto</string>
+
+    <!-- Health Connect -->
+    <string name="health_ok">Conectado a Health Connect.</string>
+    <string name="health_missing">Falta dar permiso para guardar en Health Connect.</string>
+    <string name="health_unavailable">Health Connect no está disponible en este móvil.</string>
+    <string name="health_needs_update">Hay que actualizar Health Connect desde Google Play.</string>
+
+    <!-- Inicio -->
+    <string name="home_title">Importar entrenamientos</string>
+    <string name="home_subtitle">Haz una foto a la pantalla «Registro de ejercicio» de Ring Fit Adventure o elige una captura de la Switch.</string>
+    <string name="home_take_photo">Hacer foto</string>
+    <string name="home_pick_gallery">Elegir de la galería</string>
+    <string name="home_reading">Leyendo la imagen…</string>
+    <string name="home_read_error">No se pudo leer la imagen</string>
+
+    <!-- Revisión -->
+    <string name="review_title">Revisar entrenamientos</string>
+    <string name="review_no_scan">No hay ninguna imagen pendiente de revisar.</string>
+    <string name="review_nothing_found">No se encontraron entrenamientos en la imagen. Prueba otra foto con menos reflejos, o añade el día a mano.</string>
+    <string name="review_image">Imagen importada</string>
+    <string name="review_new_day">Día nuevo</string>
+    <string name="review_no_activity">Sin actividad este día.</string>
+    <string name="review_date_today">La imagen no tenía fecha: se usa la de hoy.</string>
+    <string name="review_already_saved">Ya está guardado.</string>
+    <string name="review_replaces">Ya hay un registro de este día (%1$s). Si lo guardas, se reemplaza.</string>
+    <string name="field_date">Fecha</string>
+    <string name="field_pick">Elegir</string>
+    <string name="field_start_time">Hora de inicio</string>
+    <string name="field_duration">Duración</string>
+    <string name="field_kcal">Calorías (kcal)</string>
+    <string name="field_distance">Distancia (km)</string>
+    <string name="review_add_day">Añadir un día a mano</string>
+    <string name="review_save">Guardar seleccionados</string>
+    <string name="review_saving">Guardando…</string>
+    <string name="review_show_text">Ver el texto reconocido</string>
+    <string name="review_hide_text">Ocultar el texto reconocido</string>
+    <string name="review_empty_text">(vacío)</string>
+    <string name="review_local_only_title">Health Connect sin permisos</string>
+    <string name="review_local_only_body">No se puede guardar en Health Connect ahora. ¿Guardar solo en el historial de la app?</string>
+    <string name="review_save_here">Guardar aquí</string>
+    <string name="review_nothing_title">Nada que guardar</string>
+    <string name="review_nothing_body">Marca al menos un día.</string>
+    <string name="review_check_title">Revisa los datos</string>
+    <string name="review_saved">Guardado</string>
+    <string name="review_saved_errors">Guardado con errores</string>
+    <string name="review_view_history">Ver historial</string>
+    <plurals name="review_saved_health">
+        <item quantity="one">%d entrenamiento guardado en Health Connect y en el historial.</item>
+        <item quantity="other">%d entrenamientos guardados en Health Connect y en el historial.</item>
+        <item quantity="many">%d entrenamientos guardados en Health Connect y en el historial.</item>
+    </plurals>
+    <plurals name="review_saved_local">
+        <item quantity="one">%d entrenamiento guardado en el historial.</item>
+        <item quantity="other">%d entrenamientos guardados en el historial.</item>
+        <item quantity="many">%d entrenamientos guardados en el historial.</item>
+    </plurals>
+    <string name="error_no_date">falta la fecha</string>
+    <string name="error_no_duration">falta la duración (H:MM:SS)</string>
+    <string name="error_kcal">calorías no válidas</string>
+    <string name="error_distance">distancia no válida</string>
+
+    <!-- Historial -->
+    <string name="tab_workouts">Entrenamientos</string>
+    <string name="tab_weeks">Semanas</string>
+    <string name="tab_months">Meses</string>
+    <string name="history_empty">Todavía no hay entrenamientos guardados.</string>
+    <string name="history_local_only">Solo en el historial (no está en Health Connect).</string>
+    <string name="history_export">Exportar todo a CSV</string>
+    <string name="history_export_failed">No se pudo exportar: %1$s</string>
+    <string name="history_delete_title">Borrar entrenamiento</string>
+    <string name="history_delete_body">¿Borrar el del %1$s? También se borra de Health Connect.</string>
+    <string name="history_delete_failed">No se pudo borrar de Health Connect: %1$s</string>
+    <string name="history_total">Total: %1$s · %2$s · %3$s</string>
+    <string name="history_average">Media: %1$s · %2$s · %3$s</string>
+    <plurals name="history_days">
+        <item quantity="one">%d día de ejercicio</item>
+        <item quantity="other">%d días de ejercicio</item>
+        <item quantity="many">%d días de ejercicio</item>
+    </plurals>
+    <string-array name="months_short">
+        <item>ene</item><item>feb</item><item>mar</item><item>abr</item><item>may</item><item>jun</item>
+        <item>jul</item><item>ago</item><item>sep</item><item>oct</item><item>nov</item><item>dic</item>
+    </string-array>
+
+    <!-- Ajustes -->
+    <string name="settings_import">Importación</string>
+    <string name="settings_date_format">Formato de fecha del juego</string>
+    <string name="settings_date_format_hint">Si un número es mayor que 12, el orden se deduce solo.</string>
+    <string name="settings_dmy">Día/mes (29/11)</string>
+    <string name="settings_mdy">Mes/día (11/29)</string>
+    <string name="settings_start_time">Hora de inicio por defecto</string>
+    <string name="settings_start_time_hint">%1$s · el juego no guarda la hora, puedes cambiarla al revisar</string>
+    <string name="settings_health_status">Estado</string>
+    <string name="settings_open_health">Abrir Health Connect</string>
+    <string name="settings_open_health_hint">Permisos y datos guardados</string>
+    <string name="settings_privacy">Privacidad</string>
+    <string name="settings_privacy_policy">Política de privacidad</string>
+    <string name="settings_privacy_hint">Todo se queda en tu móvil</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Versión</string>
+    <string name="settings_source">Código fuente</string>
+    <string name="settings_inspired">Inspirada en RingFitConnect</string>
+    <string name="settings_inspired_hint">De Toshinori Watanabe, licencia MIT</string>
+    <string name="settings_license">Licencia</string>
+    <string name="settings_license_hint">MIT, software libre</string>
+    <string name="settings_ai">Hecha con IA</string>
+    <string name="settings_ai_hint">Se programó con Claude Code, con la dirección y las pruebas de su autor.</string>
+    <string name="settings_legal">Aviso legal</string>
+    <string name="settings_legal_hint">No está afiliada, patrocinada ni aprobada por Nintendo. Nintendo Switch y Ring Fit Adventure son marcas registradas de Nintendo. Health Connect es una marca de Google LLC.</string>
+
+    <!-- Privacidad -->
+    <string name="privacy_heading">Cómo usa FitLog tus datos</string>
+    <string name="privacy_text">El texto de las fotos se reconoce en el propio móvil y los entrenamientos solo se guardan en esta app y en Health Connect. La app no usa internet, no tiene anuncios ni analítica, y solo comparte datos cuando tú exportas el CSV.</string>
+    <string name="privacy_text_health">FitLog solo escribe en Health Connect sesiones de ejercicio, calorías activas y distancia de los días que confirmas, y lee esos mismos tipos para poder reemplazar o borrar lo que guardó.</string>
+</resources>

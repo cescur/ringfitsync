@@ -2,7 +2,6 @@ package cl.cescur.fitlog.ui
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,10 +46,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import cl.cescur.fitlog.BuildConfigInfo
+import cl.cescur.fitlog.R
 import cl.cescur.fitlog.health.HealthConnect
 import cl.cescur.fitlog.health.HealthStatus
 import cl.cescur.fitlog.parser.DateOrder
@@ -58,14 +60,9 @@ import cl.cescur.fitlog.parser.DateOrder
 private const val REPO_URL = "https://github.com/cescur/ringfitsync"
 private const val INSPIRATION_URL = "https://github.com/watanabetoshinori/RingFitConnect"
 
-const val PRIVACY_TEXT =
-    "El texto de las fotos se reconoce en el propio móvil y los entrenamientos solo se guardan en esta app y en " +
-        "Health Connect. La app no usa internet, no tiene anuncios ni analítica, y solo comparte datos cuando tú " +
-        "exportas el CSV."
+private val DATE_ORDER_LABELS = mapOf(DateOrder.DMY to R.string.settings_dmy, DateOrder.MDY to R.string.settings_mdy)
 
-private val DATE_ORDER_LABELS = mapOf(DateOrder.DMY to "Día/mes (29/11)", DateOrder.MDY to "Mes/día (11/29)")
-
-private fun Context.openUrl(url: String) = startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+private fun Context.openUrl(url: String) = startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
 
 @Composable
 private fun SectionHeader(text: String) {
@@ -106,19 +103,19 @@ fun SettingsScreen(onBack: () -> Unit, onPrivacy: () -> Unit) {
     var startTime by remember { mutableStateOf(settings.defaultStartTime) }
     var choosingDateOrder by remember { mutableStateOf(false) }
 
-    Scaffold(topBar = { AppBar("Ajustes", onBack = onBack) }) { padding ->
+    Scaffold(topBar = { AppBar(stringResource(R.string.settings), onBack = onBack) }) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding)) {
-            item { SectionHeader("Importación") }
+            item { SectionHeader(stringResource(R.string.settings_import)) }
             item {
-                SettingItem(Icons.Outlined.Event, "Formato de fecha del juego", DATE_ORDER_LABELS.getValue(dateOrder)) {
+                SettingItem(Icons.Outlined.Event, stringResource(R.string.settings_date_format), stringResource(DATE_ORDER_LABELS.getValue(dateOrder))) {
                     choosingDateOrder = true
                 }
             }
             item {
                 SettingItem(
                     Icons.Outlined.Schedule,
-                    "Hora de inicio por defecto",
-                    "$startTime · el juego no guarda la hora, puedes cambiarla al revisar",
+                    stringResource(R.string.settings_start_time),
+                    stringResource(R.string.settings_start_time_hint, startTime.toString()),
                 ) {
                     showTimePicker(context, startTime) { startTime = it; settings.defaultStartTime = it }
                 }
@@ -130,15 +127,15 @@ fun SettingsScreen(onBack: () -> Unit, onPrivacy: () -> Unit) {
                 val ok = health.status == HealthStatus.OK
                 SettingItem(
                     if (ok) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                    "Estado",
-                    health.status?.text ?: "Comprobando…",
+                    stringResource(R.string.settings_health_status),
+                    stringResource(health.status?.text ?: R.string.checking),
                     iconTint = when (health.status) {
                         null -> Muted
                         HealthStatus.OK -> Ok
                         else -> Warn
                     },
                     trailing = if (health.status == HealthStatus.MISSING_PERMISSIONS) {
-                        { FilledTonalButton(onClick = health.grant) { Text("Dar permisos") } }
+                        { FilledTonalButton(onClick = health.grant) { Text(stringResource(R.string.grant_permissions)) } }
                     } else {
                         null
                     },
@@ -146,41 +143,40 @@ fun SettingsScreen(onBack: () -> Unit, onPrivacy: () -> Unit) {
             }
             if (health.status != null && health.status != HealthStatus.UNAVAILABLE) {
                 item {
-                    SettingItem(Icons.AutoMirrored.Outlined.OpenInNew, "Abrir Health Connect", "Permisos y datos guardados") {
+                    SettingItem(Icons.AutoMirrored.Outlined.OpenInNew, stringResource(R.string.settings_open_health), stringResource(R.string.settings_open_health_hint)) {
                         runCatching { context.startActivity(HealthConnect.settingsIntent()) }
                     }
                 }
             }
 
             item { HorizontalDivider(Modifier.padding(top = 8.dp)) }
-            item { SectionHeader("Privacidad") }
-            item { SettingItem(Icons.Outlined.Policy, "Política de privacidad", "Todo se queda en tu móvil", onClick = onPrivacy) }
+            item { SectionHeader(stringResource(R.string.settings_privacy)) }
+            item { SettingItem(Icons.Outlined.Policy, stringResource(R.string.settings_privacy_policy), stringResource(R.string.settings_privacy_hint), onClick = onPrivacy) }
 
             item { HorizontalDivider(Modifier.padding(top = 8.dp)) }
-            item { SectionHeader("Acerca de") }
-            item { SettingItem(Icons.Outlined.Info, "Versión", BuildConfigInfo.versionName(context)) }
+            item { SectionHeader(stringResource(R.string.settings_about)) }
+            item { SettingItem(Icons.Outlined.Info, stringResource(R.string.settings_version), BuildConfigInfo.versionName(context)) }
             item {
-                SettingItem(Icons.Outlined.Code, "Código fuente", "github.com/cescur/ringfitsync") { context.openUrl(REPO_URL) }
+                SettingItem(Icons.Outlined.Code, stringResource(R.string.settings_source), "github.com/cescur/ringfitsync") { context.openUrl(REPO_URL) }
             }
             item {
-                SettingItem(Icons.Outlined.Lightbulb, "Inspirada en RingFitConnect", "De Toshinori Watanabe, licencia MIT") {
+                SettingItem(Icons.Outlined.Lightbulb, stringResource(R.string.settings_inspired), stringResource(R.string.settings_inspired_hint)) {
                     context.openUrl(INSPIRATION_URL)
                 }
             }
-            item { SettingItem(Icons.Outlined.Description, "Licencia", "MIT, software libre") }
+            item { SettingItem(Icons.Outlined.Description, stringResource(R.string.settings_license), stringResource(R.string.settings_license_hint)) }
             item {
                 SettingItem(
                     Icons.Outlined.SmartToy,
-                    "Hecha con IA",
-                    "Se programó con Claude Code, con la dirección y las pruebas de su autor.",
+                    stringResource(R.string.settings_ai),
+                    stringResource(R.string.settings_ai_hint),
                 )
             }
             item {
                 SettingItem(
                     Icons.Outlined.Gavel,
-                    "Aviso legal",
-                    "No está afiliada, patrocinada ni aprobada por Nintendo. Nintendo Switch y Ring Fit Adventure son " +
-                        "marcas registradas de Nintendo. Health Connect es una marca de Google LLC.",
+                    stringResource(R.string.settings_legal),
+                    stringResource(R.string.settings_legal_hint),
                 )
             }
         }
@@ -190,11 +186,11 @@ fun SettingsScreen(onBack: () -> Unit, onPrivacy: () -> Unit) {
         AlertDialog(
             onDismissRequest = { choosingDateOrder = false },
             icon = { Icon(Icons.Outlined.Event, contentDescription = null) },
-            title = { Text("Formato de fecha del juego") },
+            title = { Text(stringResource(R.string.settings_date_format)) },
             text = {
                 Column {
                     Text(
-                        "Si un número es mayor que 12, el orden se deduce solo.",
+                        stringResource(R.string.settings_date_format_hint),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -211,27 +207,26 @@ fun SettingsScreen(onBack: () -> Unit, onPrivacy: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(selected = dateOrder == value, onClick = null)
-                            Text(label, modifier = Modifier.padding(start = 12.dp))
+                            Text(stringResource(label), modifier = Modifier.padding(start = 12.dp))
                         }
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { choosingDateOrder = false }) { Text("Cerrar") } },
+            confirmButton = { TextButton(onClick = { choosingDateOrder = false }) { Text(stringResource(R.string.close)) } },
         )
     }
 }
 
 @Composable
 fun PrivacyScreen(onBack: () -> Unit) {
-    Scaffold(topBar = { AppBar("Privacidad", onBack = onBack) }) { padding ->
+    Scaffold(topBar = { AppBar(stringResource(R.string.settings_privacy), onBack = onBack) }) { padding ->
         Column(
             Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
         ) {
-            Text("Cómo usa FitLog tus datos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-            Text(PRIVACY_TEXT, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 12.dp))
+            Text(stringResource(R.string.privacy_heading), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.privacy_text), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 12.dp))
             Text(
-                "FitLog solo escribe en Health Connect sesiones de ejercicio, calorías activas y distancia de los días " +
-                    "que confirmas, y lee esos mismos tipos para poder reemplazar o borrar lo que guardó.",
+                stringResource(R.string.privacy_text_health),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 12.dp),
             )

@@ -108,6 +108,10 @@ export default function SettingsScreen() {
           </Text>{' '}
           de Toshinori Watanabe (MIT).
         </Text>
+        <Text style={[styles.muted, { marginTop: 8 }]}>
+          Esta app se hizo con ayuda de inteligencia artificial (Claude Code), con la dirección y las pruebas de su
+          autor.
+        </Text>
         <Pressable onPress={() => Linking.openURL(REPO_URL)} style={{ marginTop: 12 }}>
           <Text style={styles.link}>Código fuente en GitHub</Text>
         </Pressable>

@@ -20,6 +20,9 @@ end of 2026. Text recognition runs on the phone, the app has no ads, no analytic
 Get the latest APK from [Releases](../../releases) and open it on your phone (Android will ask to
 allow installs from that source). Requires Android 8.0 or newer and Health Connect.
 
+There are two APKs of about 7–8 MB each: `arm64` works on almost every phone from the last years;
+`arm32` is only for old 32-bit phones.
+
 ## Features
 
 - Take a photo of the TV or pick a Switch screenshot (shared to the phone with the album QR code).
@@ -38,7 +41,7 @@ allow installs from that source). Requires Android 8.0 or newer and Health Conne
 - [Health Connect](https://developer.android.com/health-and-fitness/guides/health-connect) (`androidx.health.connect:connect-client`).
 - [ML Kit Text Recognition](https://developers.google.com/ml-kit/vision/text-recognition/v2/android), bundled model so it works offline.
 - Plain SQLite for the history and SharedPreferences for settings.
-- The parser lives in `app/src/main/java/com/solof/fitlog/parser/Parser.kt`, has no Android
+- The parser lives in `app/src/main/java/cl/cescur/fitlog/parser/Parser.kt`, has no Android
   dependencies and is covered by JUnit tests in `app/src/test`.
 
 ## Building
@@ -70,7 +73,7 @@ with the same key as the installed version, so keep a backup of the key and its 
 ### Publishing with GitHub Actions
 
 - `Tests` runs the unit tests and a debug build on every push and pull request.
-- `Publicar APK` runs when a release is published: it builds the signed APK and attaches it to the release.
+- `Publicar APK` runs when a release is published: it builds the signed APKs and attaches them to the release.
 
 One-time setup, in *Settings → Secrets and variables → Actions*:
 
@@ -93,7 +96,7 @@ Then create a release from the Releases tab with a tag such as `v1.0.0`. The ver
 ## Adding test cases
 
 On the review screen, «Ver el texto reconocido → Compartir texto» shares the raw OCR text. Add it to
-`RealScreenshotTest` in `app/src/test/java/com/solof/fitlog/parser/ParserTest.kt` with the expected result.
+`RealScreenshotTest` in `app/src/test/java/cl/cescur/fitlog/parser/ParserTest.kt` with the expected result.
 
 ## Disclaimer
 
@@ -128,6 +131,9 @@ texto se reconoce en el propio móvil, la app no tiene anuncios ni analítica y 
 Descarga el último APK desde [Releases](../../releases) y ábrelo en el móvil (Android pedirá permitir
 instalar apps de esa fuente). Necesita Android 8.0 o superior y Health Connect.
 
+Hay dos APK de unos 7–8 MB cada uno: `arm64` sirve para casi cualquier móvil de los últimos años;
+`arm32` es solo para móviles antiguos de 32 bits.
+
 ### Funciones
 
 - Haz una foto a la tele o elige una captura de la Switch (pasada al móvil con el código QR del álbum).
@@ -146,7 +152,7 @@ instalar apps de esa fuente). Necesita Android 8.0 o superior y Health Connect.
 - [Health Connect](https://developer.android.com/health-and-fitness/guides/health-connect) (`androidx.health.connect:connect-client`).
 - [ML Kit Text Recognition](https://developers.google.com/ml-kit/vision/text-recognition/v2/android), con el modelo incluido para funcionar sin internet.
 - SQLite para el historial y SharedPreferences para los ajustes.
-- La lógica de lectura está en `app/src/main/java/com/solof/fitlog/parser/Parser.kt`, sin
+- La lógica de lectura está en `app/src/main/java/cl/cescur/fitlog/parser/Parser.kt`, sin
   dependencias de Android y con tests de JUnit en `app/src/test`.
 
 ### Compilar
@@ -178,7 +184,7 @@ con la misma clave que la versión instalada, así que guarda una copia de la cl
 #### Publicar con GitHub Actions
 
 - `Tests` ejecuta los tests y un build de depuración en cada push y pull request.
-- `Publicar APK` se ejecuta al publicar una versión: compila el APK firmado y lo adjunta a esa versión.
+- `Publicar APK` se ejecuta al publicar una versión: compila los APK firmados y los adjunta a esa versión.
 
 Configuración, una sola vez, en *Settings → Secrets and variables → Actions*:
 
@@ -202,7 +208,7 @@ versión sale de la etiqueta.
 ### Añadir casos de prueba
 
 En la pantalla de revisión, «Ver el texto reconocido → Compartir texto» comparte el texto del OCR.
-Añádelo a `RealScreenshotTest` en `app/src/test/java/com/solof/fitlog/parser/ParserTest.kt` con el resultado esperado.
+Añádelo a `RealScreenshotTest` en `app/src/test/java/cl/cescur/fitlog/parser/ParserTest.kt` con el resultado esperado.
 
 ### Aviso legal
 

@@ -1,7 +1,7 @@
 name: Publicar APK
 
 # Al publicar una versión en GitHub (Releases → Draft a new release, etiqueta vX.Y.Z),
-# compila el APK firmado y lo adjunta a esa versión.
+# compila los APK firmados (arm64 y arm32) y los adjunta a esa versión.
 on:
   release:
     types: [published]
@@ -46,5 +46,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          cp app/build/outputs/apk/release/app-release.apk "FitLog-$TAG.apk"
-          gh release upload "$TAG" "FitLog-$TAG.apk" --clobber
+          cp app/build/outputs/apk/release/app-arm64-v8a-release.apk "FitLog-$TAG-arm64.apk"
+          cp app/build/outputs/apk/release/app-armeabi-v7a-release.apk "FitLog-$TAG-arm32.apk"
+          gh release upload "$TAG" "FitLog-$TAG-arm64.apk" "FitLog-$TAG-arm32.apk" --clobber

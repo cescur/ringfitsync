@@ -11,18 +11,16 @@ fun signingValue(name: String): String? =
         ?: providers.environmentVariable("FITLOG_" + name.replace(Regex("([A-Z])"), "_$1").uppercase()).orNull
 
 android {
-    namespace = "com.solof.fitlog"
+    namespace = "cl.cescur.fitlog"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.solof.fitlog"
+        applicationId = "cl.cescur.fitlog"
         minSdk = 26
         targetSdk = 36
         // GitHub Actions pasa la versión a partir de la etiqueta (v1.2.3 → 1.2.3).
         versionCode = providers.gradleProperty("fitlog.versionCode").orNull?.toInt() ?: 1
         versionName = providers.gradleProperty("fitlog.versionName").orNull ?: "1.0.0"
-        // Solo procesadores ARM (los móviles reales): el OCR de ML Kit pesa ~11 MB por arquitectura.
-        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
 
     signingConfigs {
@@ -51,8 +49,20 @@ android {
         compose = true
     }
 
+    // El OCR de ML Kit pesa ~11 MB por arquitectura: un APK por procesador ARM (los de los móviles
+    // reales), con las librerías nativas comprimidas.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a")
+            isUniversalApk = false
+        }
+    }
+
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        jniLibs.useLegacyPackaging = true
     }
 }
 

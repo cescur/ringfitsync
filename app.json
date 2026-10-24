@@ -1,34 +1,58 @@
 {
   "expo": {
-    "name": "ringfitlog",
+    "name": "Ring Fit Log",
     "slug": "ringfitlog",
+    "scheme": "ringfitlog",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
-    },
+    "platforms": ["android"],
     "android": {
+      "package": "com.solof.ringfitlog",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.health.READ_EXERCISE",
+        "android.permission.health.WRITE_EXERCISE",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.health.WRITE_DISTANCE"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
     },
     "plugins": [
-      "react-native-health-connect",
+      "expo-router",
       "expo-sqlite",
       "expo-sharing",
-      "expo-build-properties",
-      "expo-router",
       "expo-status-bar",
-      "@react-native-community/datetimepicker"
+      "react-native-health-connect",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "La app usa la cámara para fotografiar la pantalla de Ring Fit Adventure.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
+        }
+      ]
     ]
   }
 }

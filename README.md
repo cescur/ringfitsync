@@ -73,7 +73,8 @@ with the same key as the installed version, so keep a backup of the key and its 
 ### Publishing with GitHub Actions
 
 - `Tests` runs the unit tests and a debug build on every push and pull request.
-- `Publicar APK` runs when a release is published: it builds the signed APKs and attaches them to the release.
+- `Publicar APK` is started by hand from the Actions tab (*Run workflow*, with a version such as `1.0.1`):
+  it builds the signed APKs and publishes release `v1.0.1` with them attached.
 
 One-time setup, in *Settings → Secrets and variables → Actions*:
 
@@ -84,7 +85,8 @@ One-time setup, in *Settings → Secrets and variables → Actions*:
 | `FITLOG_KEY_ALIAS` | `fitlog` |
 | `FITLOG_KEY_PASSWORD` | key password |
 
-Then create a release from the Releases tab with a tag such as `v1.0.0`. The version name comes from the tag.
+Releases in this repo are immutable, so the APKs are attached in the same step that publishes the
+release, and a version number can't be reused once published.
 
 ## Health Connect permissions
 
@@ -183,7 +185,8 @@ con la misma clave que la versión instalada, así que guarda una copia de la cl
 #### Publicar con GitHub Actions
 
 - `Tests` ejecuta los tests y un build de depuración en cada push y pull request.
-- `Publicar APK` se ejecuta al publicar una versión: compila los APK firmados y los adjunta a esa versión.
+- `Publicar APK` se lanza a mano desde la pestaña Actions (*Run workflow*, con una versión como `1.0.1`):
+  compila los APK firmados y publica la versión `v1.0.1` con ellos adjuntos.
 
 Configuración, una sola vez, en *Settings → Secrets and variables → Actions*:
 
@@ -194,8 +197,8 @@ Configuración, una sola vez, en *Settings → Secrets and variables → Actions
 | `FITLOG_KEY_ALIAS` | `fitlog` |
 | `FITLOG_KEY_PASSWORD` | contraseña de la clave |
 
-Después crea una versión desde la pestaña Releases con una etiqueta como `v1.0.0`. El nombre de la
-versión sale de la etiqueta.
+Las versiones de este repo son inmutables: los APK se adjuntan en el mismo paso que publica la
+versión, y un número de versión no se puede reutilizar una vez publicado.
 
 ### Permisos de Health Connect
 

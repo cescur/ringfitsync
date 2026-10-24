@@ -15,6 +15,11 @@ end of 2026. Text recognition runs on the phone, the app has no ads, no analytic
 > coding assistant, under the direction and testing of its author. Keep that in mind if you prefer
 > to avoid AI-generated software.
 
+## Download
+
+Get the latest APK from [Releases](../../releases) and open it on your phone (Android will ask to
+allow installs from that source). Requires Android 8.0 or newer and Health Connect.
+
 ## Features
 
 - Take a photo of the TV or pick a Switch screenshot (shared to the phone with the album QR code).
@@ -29,43 +34,54 @@ end of 2026. Text recognition runs on the phone, the app has no ads, no analytic
 
 ## Stack
 
-- Expo SDK 58 + TypeScript, development build (it does not run in Expo Go).
-- [`react-native-health-connect`](https://github.com/matinzd/react-native-health-connect) (ships its own Expo config plugin).
-- [`@infinitered/react-native-mlkit-text-recognition`](https://github.com/infinitered/react-native-mlkit) for OCR with line positions.
-- `expo-sqlite` for history and settings; `expo-file-system` + `expo-sharing` for CSV export.
-- The parser lives in `src/lib/parser.ts`, has no native dependencies and is covered by Jest tests in `src/lib/__tests__`.
+- Kotlin + Jetpack Compose (Material 3), minSdk 26.
+- [Health Connect](https://developer.android.com/health-and-fitness/guides/health-connect) (`androidx.health.connect:connect-client`).
+- [ML Kit Text Recognition](https://developers.google.com/ml-kit/vision/text-recognition/v2/android), bundled model so it works offline.
+- Plain SQLite for the history and SharedPreferences for settings.
+- The parser lives in `app/src/main/java/com/solof/fitlog/parser/Parser.kt`, has no Android
+  dependencies and is covered by JUnit tests in `app/src/test`.
 
-## Development
+## Building
 
-```bash
-npm install
-npm test
-npm run typecheck
-```
-
-Builds run on [EAS](https://docs.expo.dev/build/introduction/); no local Android SDK is needed.
-The `extra.eas.projectId` and `owner` in `app.json` point to the author's Expo project. They are
-public identifiers, not secrets: if you fork this, run `npx eas-cli init` to link your own project.
-
-1. Development build, once (or whenever native libraries or `app.json` change):
-   ```bash
-   npm run build:dev
-   ```
-   Install the APK from the link or QR code EAS gives you.
-2. Start the dev server and open the installed app; code changes show up instantly:
-   ```bash
-   npx expo start --dev-client --tunnel
-   ```
-
-### Release APK
+Needs JDK 17+ and the Android SDK (Android Studio, or just the command-line tools).
 
 ```bash
-npm run build:apk
+./gradlew :app:testDebugUnitTest   # tests
+./gradlew :app:assembleDebug       # debug APK
+./gradlew :app:assembleRelease     # signed release APK (see below)
 ```
 
-Builds a release APK (`preview` profile) signed with the key EAS keeps in your Expo account.
-Install it by opening the downloaded file on the phone (Android will ask to allow installs from that
-source) or over USB with `adb install file.apk`.
+APKs end up in `app/build/outputs/apk/`. Install one over USB with `adb install <file>.apk`.
+
+### Signing
+
+The release key is never stored in the repo. Locally, Gradle reads it from `~/.gradle/gradle.properties`:
+
+```properties
+fitlog.storeFile=/path/to/fitlog-release.jks
+fitlog.storePassword=...
+fitlog.keyAlias=fitlog
+fitlog.keyPassword=...
+```
+
+Without those, `assembleRelease` produces an unsigned APK. Android only installs an update signed
+with the same key as the installed version, so keep a backup of the key and its password.
+
+### Publishing with GitHub Actions
+
+- `Tests` runs the unit tests and a debug build on every push and pull request.
+- `Publicar APK` runs when a release is published: it builds the signed APK and attaches it to the release.
+
+One-time setup, in *Settings → Secrets and variables → Actions*:
+
+| Secret | Value |
+| --- | --- |
+| `FITLOG_KEYSTORE_BASE64` | the keystore in base64 (`base64 -i fitlog-release.jks \| pbcopy` on macOS) |
+| `FITLOG_STORE_PASSWORD` | keystore password |
+| `FITLOG_KEY_ALIAS` | `fitlog` |
+| `FITLOG_KEY_PASSWORD` | key password |
+
+Then create a release from the Releases tab with a tag such as `v1.0.0`. The version name comes from the tag.
 
 ## Health Connect permissions
 
@@ -77,18 +93,19 @@ source) or over USB with `adb install file.apk`.
 ## Adding test cases
 
 On the review screen, «Ver el texto reconocido → Compartir texto» shares the raw OCR text. Add it to
-`src/lib/__tests__/real.test.ts` with the expected result.
+`RealScreenshotTest` in `app/src/test/java/com/solof/fitlog/parser/ParserTest.kt` with the expected result.
 
 ## Disclaimer
 
 Non-commercial hobby project. Not affiliated with, sponsored or endorsed by Nintendo. Nintendo Switch
 and Ring Fit Adventure are trademarks of Nintendo. Health Connect is a trademark of Google LLC.
-The screenshot in `src/lib/__tests__/fixtures` is used only as a test case.
+The screenshot in `app/src/test/resources` is used only as a test case.
 
 ## Credits and license
 
 - Parsing approach inspired by [RingFitConnect](https://github.com/watanabetoshinori/RingFitConnect)
   by Toshinori Watanabe (MIT), the equivalent app for iOS and HealthKit.
+- An earlier version of this app was built with Expo; it is kept under the `expo-v1` tag.
 - Code released under the [MIT license](LICENSE).
 
 ---
@@ -106,6 +123,11 @@ texto se reconoce en el propio móvil, la app no tiene anuncios ni analítica y 
 > asistente de programación con IA, bajo la dirección y las pruebas de su autor. Tenlo en cuenta si
 > prefieres evitar software generado con IA.
 
+### Descarga
+
+Descarga el último APK desde [Releases](../../releases) y ábrelo en el móvil (Android pedirá permitir
+instalar apps de esa fuente). Necesita Android 8.0 o superior y Health Connect.
+
 ### Funciones
 
 - Haz una foto a la tele o elige una captura de la Switch (pasada al móvil con el código QR del álbum).
@@ -120,44 +142,55 @@ texto se reconoce en el propio móvil, la app no tiene anuncios ni analítica y 
 
 ### Tecnología
 
-- Expo SDK 58 + TypeScript, con development build (no funciona en Expo Go).
-- [`react-native-health-connect`](https://github.com/matinzd/react-native-health-connect) (incluye su propio plugin de Expo).
-- [`@infinitered/react-native-mlkit-text-recognition`](https://github.com/infinitered/react-native-mlkit) para el OCR con la posición de cada línea.
-- `expo-sqlite` para el historial y los ajustes; `expo-file-system` + `expo-sharing` para exportar el CSV.
-- La lógica de lectura está en `src/lib/parser.ts`, sin dependencias nativas y con tests de Jest en `src/lib/__tests__`.
+- Kotlin + Jetpack Compose (Material 3), minSdk 26.
+- [Health Connect](https://developer.android.com/health-and-fitness/guides/health-connect) (`androidx.health.connect:connect-client`).
+- [ML Kit Text Recognition](https://developers.google.com/ml-kit/vision/text-recognition/v2/android), con el modelo incluido para funcionar sin internet.
+- SQLite para el historial y SharedPreferences para los ajustes.
+- La lógica de lectura está en `app/src/main/java/com/solof/fitlog/parser/Parser.kt`, sin
+  dependencias de Android y con tests de JUnit en `app/src/test`.
 
-### Desarrollo
+### Compilar
 
-```bash
-npm install
-npm test
-npm run typecheck
-```
-
-Los builds se hacen en la nube con [EAS](https://docs.expo.dev/build/introduction/); no hace falta
-el SDK de Android en el ordenador. `extra.eas.projectId` y `owner` en `app.json` apuntan al
-proyecto de Expo del autor. Son identificadores públicos, no secretos: si haces un fork, ejecuta
-`npx eas-cli init` para vincular tu propio proyecto.
-
-1. Build de desarrollo, una vez (o cuando cambien las librerías nativas o `app.json`):
-   ```bash
-   npm run build:dev
-   ```
-   Instala el APK desde el enlace o el QR que te da EAS.
-2. Arranca el servidor de desarrollo y abre la app instalada; los cambios de código se ven al instante:
-   ```bash
-   npx expo start --dev-client --tunnel
-   ```
-
-#### APK final
+Necesita JDK 17 o superior y el SDK de Android (Android Studio, o solo las herramientas de línea de comandos).
 
 ```bash
-npm run build:apk
+./gradlew :app:testDebugUnitTest   # tests
+./gradlew :app:assembleDebug       # APK de depuración
+./gradlew :app:assembleRelease     # APK de release firmado (ver abajo)
 ```
 
-Genera un APK de release (perfil `preview`) firmado con la clave que EAS guarda en tu cuenta de Expo.
-Para instalarlo, abre el archivo descargado en el móvil (Android pedirá permitir instalar apps de esa
-fuente) o, por USB, `adb install archivo.apk`.
+Los APK quedan en `app/build/outputs/apk/`. Para instalar uno por USB: `adb install <archivo>.apk`.
+
+#### Firma
+
+La clave de firma nunca se guarda en el repo. En local, Gradle la lee de `~/.gradle/gradle.properties`:
+
+```properties
+fitlog.storeFile=/ruta/a/fitlog-release.jks
+fitlog.storePassword=...
+fitlog.keyAlias=fitlog
+fitlog.keyPassword=...
+```
+
+Sin eso, `assembleRelease` genera un APK sin firmar. Android solo instala una actualización firmada
+con la misma clave que la versión instalada, así que guarda una copia de la clave y su contraseña.
+
+#### Publicar con GitHub Actions
+
+- `Tests` ejecuta los tests y un build de depuración en cada push y pull request.
+- `Publicar APK` se ejecuta al publicar una versión: compila el APK firmado y lo adjunta a esa versión.
+
+Configuración, una sola vez, en *Settings → Secrets and variables → Actions*:
+
+| Secret | Valor |
+| --- | --- |
+| `FITLOG_KEYSTORE_BASE64` | la clave en base64 (`base64 -i fitlog-release.jks \| pbcopy` en macOS) |
+| `FITLOG_STORE_PASSWORD` | contraseña del almacén de claves |
+| `FITLOG_KEY_ALIAS` | `fitlog` |
+| `FITLOG_KEY_PASSWORD` | contraseña de la clave |
+
+Después crea una versión desde la pestaña Releases con una etiqueta como `v1.0.0`. El nombre de la
+versión sale de la etiqueta.
 
 ### Permisos de Health Connect
 
@@ -169,16 +202,17 @@ fuente) o, por USB, `adb install archivo.apk`.
 ### Añadir casos de prueba
 
 En la pantalla de revisión, «Ver el texto reconocido → Compartir texto» comparte el texto del OCR.
-Añádelo a `src/lib/__tests__/real.test.ts` con el resultado esperado.
+Añádelo a `RealScreenshotTest` en `app/src/test/java/com/solof/fitlog/parser/ParserTest.kt` con el resultado esperado.
 
 ### Aviso legal
 
 Proyecto personal sin ánimo de lucro. No está afiliado, patrocinado ni aprobado por Nintendo.
 Nintendo Switch y Ring Fit Adventure son marcas registradas de Nintendo. Health Connect es una marca
-de Google LLC. La captura de `src/lib/__tests__/fixtures` se usa solo como caso de prueba.
+de Google LLC. La captura de `app/src/test/resources` se usa solo como caso de prueba.
 
 ### Créditos y licencia
 
 - La lógica de lectura se inspira en [RingFitConnect](https://github.com/watanabetoshinori/RingFitConnect)
   de Toshinori Watanabe (MIT), la app equivalente para iOS y HealthKit.
+- Una versión anterior de esta app se hizo con Expo; se conserva en la etiqueta `expo-v1`.
 - Código bajo [licencia MIT](LICENSE).

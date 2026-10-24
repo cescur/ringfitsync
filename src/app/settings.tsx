@@ -1,23 +1,24 @@
 import Constants from 'expo-constants';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { PickerField } from '../components/PickerField';
 import { Button, Card, colors } from '../components/ui';
 import { getSettings, setSetting, type Settings } from '../lib/db';
 import { openHealthConnectSettings } from '../lib/health';
 import type { DateOrder } from '../lib/parser';
 import { HEALTH_STATUS_TEXT, useHealthStatus } from '../lib/useHealthStatus';
-import { isValidTime } from '../lib/workout';
+
+const REPO_URL = 'https://github.com/cescur/ringfitsync';
+const INSPIRATION_URL = 'https://github.com/watanabetoshinori/RingFitConnect';
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [startTime, setStartTime] = useState('');
   const { status, grant } = useHealthStatus();
 
   useEffect(() => {
     getSettings().then((s) => {
       setSettings(s);
-      setStartTime(s.defaultStartTime);
     });
   }, []);
 
@@ -28,18 +29,9 @@ export default function SettingsScreen() {
     setSettings({ ...settings, dateOrder });
   };
 
-  const saveStart = async () => {
-    const t = startTime.trim();
-    if (!isValidTime(t)) {
-      Alert.alert('Hora no válida', 'Usa el formato HH:MM, por ejemplo 19:00.');
-      setStartTime(settings.defaultStartTime);
-      return;
-    }
-    const [hh, mm] = t.split(':');
-    const value = `${hh.padStart(2, '0')}:${mm}`;
+  const saveStart = async (value: string) => {
     await setSetting('defaultStartTime', value);
     setSettings({ ...settings, defaultStartTime: value });
-    setStartTime(value);
   };
 
   return (
@@ -65,13 +57,12 @@ export default function SettingsScreen() {
         <Text style={styles.muted}>
           La pantalla del juego no dice a qué hora entrenaste. Se usa esta hora y puedes cambiarla en la revisión.
         </Text>
-        <TextInput
-          value={startTime}
-          onChangeText={setStartTime}
-          onEndEditing={saveStart}
-          placeholder="19:00"
-          keyboardType="numbers-and-punctuation"
-          style={styles.input}
+        <PickerField
+          mode="time"
+          value={settings.defaultStartTime}
+          onChange={saveStart}
+          title="Hora de inicio por defecto"
+          style={{ marginTop: 10, width: 120 }}
         />
       </Card>
 
@@ -111,9 +102,15 @@ export default function SettingsScreen() {
           marcas registradas de Nintendo. Health Connect es una marca de Google LLC.
         </Text>
         <Text style={[styles.muted, { marginTop: 8 }]}>
-          Software libre con licencia MIT. La lógica de lectura se inspira en RingFitConnect de Toshinori Watanabe
-          (MIT).
+          Software libre con licencia MIT. La lógica de lectura se inspira en{' '}
+          <Text style={styles.inlineLink} onPress={() => Linking.openURL(INSPIRATION_URL)}>
+            RingFitConnect
+          </Text>{' '}
+          de Toshinori Watanabe (MIT).
         </Text>
+        <Pressable onPress={() => Linking.openURL(REPO_URL)} style={{ marginTop: 12 }}>
+          <Text style={styles.link}>Código fuente en GitHub</Text>
+        </Pressable>
       </Card>
     </ScrollView>
   );
@@ -127,16 +124,6 @@ const styles = StyleSheet.create({
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.border },
   radioOn: { borderColor: colors.accent, backgroundColor: colors.accent },
   optionText: { fontSize: 16, color: colors.text },
-  input: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 16,
-    color: colors.text,
-    width: 100,
-  },
   link: { color: colors.accent, fontSize: 16 },
+  inlineLink: { color: colors.accent, textDecorationLine: 'underline' },
 });

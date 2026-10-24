@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Share, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
+import { PickerField } from '../components/PickerField';
 import { Button, Card, colors } from '../components/ui';
 import { deleteWorkout, getSettings, saveWorkout, workoutsOnDates, type StoredWorkout } from '../lib/db';
 import { deleteWorkoutFromHealth, getHealthStatus, writeWorkout } from '../lib/health';
@@ -210,8 +211,14 @@ export default function Review() {
               </Text>
             )}
             <View style={styles.grid}>
-              <Field label="Fecha" value={d.date} onChange={(v) => update(d.key, { date: v })} placeholder="AAAA-MM-DD" />
-              <Field label="Hora de inicio" value={d.startTime} onChange={(v) => update(d.key, { startTime: v })} placeholder="19:00" />
+              <View style={styles.field}>
+                <Text style={styles.label}>Fecha</Text>
+                <PickerField mode="date" value={d.date} onChange={(v) => update(d.key, { date: v })} placeholder="Elegir" title="Fecha" />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Hora de inicio</Text>
+                <PickerField mode="time" value={d.startTime} onChange={(v) => update(d.key, { startTime: v })} placeholder="19:00" title="Hora de inicio" />
+              </View>
               <Field label="Duración" value={d.duration} onChange={(v) => update(d.key, { duration: v })} placeholder="0:20:49" />
               <Field label="Calorías (kcal)" value={d.kcal} onChange={(v) => update(d.key, { kcal: v })} placeholder="74,25" decimal />
               <Field label="Distancia (km)" value={d.km} onChange={(v) => update(d.key, { km: v })} placeholder="1,23" decimal />

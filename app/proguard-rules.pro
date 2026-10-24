@@ -1,1 +1,3 @@
-# Las librerías usadas (Compose, Health Connect, ML Kit) traen sus propias reglas.
+# ML Kit crea sus "ComponentRegistrar" por reflexión; sin esto R8 borra los constructores
+# y el OCR falla en release con un NullPointerException.
+-keep class * implements com.google.firebase.components.ComponentRegistrar { public <init>(); }

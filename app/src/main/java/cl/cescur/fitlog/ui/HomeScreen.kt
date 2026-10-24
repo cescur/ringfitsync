@@ -1,7 +1,7 @@
 package cl.cescur.fitlog.ui
 
 import android.net.Uri
-import android.widget.Toast
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,7 +22,9 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,6 +62,7 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
     val health = rememberHealthState()
     var busy by remember { mutableStateOf(false) }
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
 
     fun process(uri: Uri) {
         busy = true
@@ -70,7 +73,8 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
                 context.app.pendingScan = Scan(uri, lines, workouts)
                 onScanned()
             } catch (e: Exception) {
-                Toast.makeText(context, "No se pudo leer la imagen: ${e.message}", Toast.LENGTH_LONG).show()
+                Log.e("FitLog", "No se pudo leer la imagen", e)
+                error = e.toString()
             } finally {
                 busy = false
             }
@@ -165,5 +169,14 @@ fun HomeScreen(onScanned: () -> Unit, onHistory: () -> Unit, onSettings: () -> U
                 ) { Text("Elegir de la galería", fontSize = 16.sp) }
             }
         }
+    }
+
+    error?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { error = null },
+            title = { Text("No se pudo leer la imagen") },
+            text = { Text(msg) },
+            confirmButton = { TextButton(onClick = { error = null }) { Text("Aceptar") } },
+        )
     }
 }
